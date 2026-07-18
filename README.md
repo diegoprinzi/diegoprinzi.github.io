@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Cup 2026 · Dashboard</title>
+<title>World Cup 2026 · Dashboard (responsive)</title>
 <style>
   :root{
     --celeste:#75AADB; --celeste-dark:#4A8CC7; --celeste-deep:#1D5B99;
@@ -159,6 +159,56 @@
   footer a{color:var(--celeste-deep)}
   .page{display:none}
   .page.active{display:block}
+
+  /* ===================== RESPONSIVE / MOBILE ===================== */
+  @media (max-width: 860px){
+    .wrap{padding:0 16px 48px}
+    h2{margin-top:26px}
+  }
+  @media (max-width: 600px){
+    header.hero{padding:22px 16px 14px}
+    .kicker{font-size:11px;letter-spacing:.12em}
+    h1{font-size:24px}
+    .sub{font-size:13px}
+    nav.tabs{gap:6px;margin-top:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+    nav.tabs::-webkit-scrollbar{display:none}
+    nav.tabs button{flex:0 0 auto;font-size:13px;padding:9px 14px;white-space:nowrap}
+    .wrap{padding:0 12px 44px}
+    h2{font-size:17px;margin-top:22px;flex-wrap:wrap}
+    .hint{display:block;margin:3px 0 0 14px}
+    .chips, #page-overview .chips{grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
+    .chip{padding:11px 12px}
+    .chip .v{font-size:18px}
+    .chip.span2{grid-column:span 2}
+    .confgrid{grid-template-columns:repeat(2,1fr);gap:9px}
+    .stages,.groups{grid-template-columns:1fr;gap:10px}
+    .show-card{padding:16px 12px 14px}
+    .show-card h3{font-size:16px}
+    .show-card .sub2{font-size:12px}
+    .panel{padding:8px 10px}
+    /* golden boot: name+tally on row 1, balls wrap on row 2 */
+    .gb-row{grid-template-columns:1fr auto;gap:5px 10px}
+    .gb-name{grid-row:1;grid-column:1;font-size:13px}
+    .gb-meta{grid-row:1;grid-column:2}
+    .gb-balls{grid-row:2;grid-column:1 / -1}
+    .gb-ball{width:16px;height:16px}
+    /* head-to-head controls stack */
+    .cmp-selects{flex-direction:column}
+    .cmp-selects select{width:100%;min-width:0;max-width:100%}
+    .cmp-head{font-size:14px}
+    .cmp-row{grid-template-columns:36px 1fr 74px 1fr 36px;gap:5px}
+    .cmp-row .num{font-size:12px}
+    .cmp-row .lbl{font-size:9.5px}
+    select.msel{max-width:100%}
+    input.search{min-width:0;flex:1 1 140px}
+    /* Argentina final card */
+    .final-card{padding:18px 14px;gap:12px;justify-content:center;text-align:center}
+    .fc-teams{gap:14px;font-size:20px}
+    .fc-teams .flag{font-size:34px}
+    img.crest-lg{width:42px;height:42px}
+    .countdown{flex-wrap:wrap;justify-content:center}
+    #tip{max-width:190px;font-size:11.5px}
+  }
 </style>
 </head>
 <body>
