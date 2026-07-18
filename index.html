@@ -16,7 +16,7 @@
 
   header.hero{background:linear-gradient(135deg,#0E2A47 0%,#1D5B99 55%,#4A8CC7 100%);color:#fff;padding:34px 20px 20px;position:relative;overflow:hidden}
   header.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(245,197,24,.22),transparent 45%)}
-  .hero-inner{max-width:1140px;margin:0 auto;position:relative;z-index:1}
+  .hero-inner{max-width:1140px;margin:0 auto;position:relative;z-index:1;padding-right:92px}
   .kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;opacity:.85;font-weight:600}
   h1{font-size:clamp(26px,4vw,40px);font-weight:800;margin:6px 0 2px}
   .sub{font-size:15px;opacity:.9}
@@ -178,6 +178,8 @@
   @media (max-width: 600px){
     header.hero{padding:22px 16px 14px}
     .kicker{font-size:11px;letter-spacing:.12em}
+    .langtoggle{top:12px;right:10px;padding:2px}
+    .langtoggle button{padding:4px 9px;font-size:11px}
     h1{font-size:24px}
     .sub{font-size:13px}
     nav.tabs{gap:5px;margin-top:14px;flex-wrap:nowrap;padding-bottom:2px}
