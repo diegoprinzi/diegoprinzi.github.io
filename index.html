@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 · Dashboard (responsive)</title>
+<style>
+  :root{
+    --celeste:#75AADB; --celeste-dark:#4A8CC7; --celeste-deep:#1D5B99;
+    --navy:#0E2A47; --gold:#F5C518; --ink:#12263A; --muted:#5B7A93;
+    --bg:#F2F7FC; --card:#FFFFFF; --line:#DCE8F4; --win:#1E9E5A; --loss:#D64545; --draw:#8A9BB0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 20px 60px}
+
+  header.hero{background:linear-gradient(135deg,#0E2A47 0%,#1D5B99 55%,#4A8CC7 100%);color:#fff;padding:34px 20px 20px;position:relative;overflow:hidden}
+  header.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(245,197,24,.22),transparent 45%)}
+  .hero-inner{max-width:1140px;margin:0 auto;position:relative;z-index:1}
+  .kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;opacity:.85;font-weight:600}
+  h1{font-size:clamp(26px,4vw,40px);font-weight:800;margin:6px 0 2px}
+  .sub{font-size:15px;opacity:.9}
+  nav.tabs{max-width:1140px;margin:18px auto 0;position:relative;z-index:1;display:flex;gap:8px}
+  nav.tabs button{border:0;cursor:pointer;font-size:15px;font-weight:700;padding:10px 22px;border-radius:12px 12px 0 0;background:rgba(255,255,255,.14);color:#fff}
+  nav.tabs button.active{background:var(--bg);color:var(--celeste-deep)}
+
+  h2{font-size:19px;font-weight:800;margin:34px 0 14px;display:flex;align-items:center;gap:8px}
+  h2 .bar{width:6px;height:22px;border-radius:3px;background:linear-gradient(180deg,var(--celeste),var(--gold))}
+  .hint{font-size:12.5px;color:var(--muted);font-weight:500;margin-left:6px}
+
+  .chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .chip .v{font-size:22px;font-weight:800;color:var(--celeste-deep)}
+  .chip .k{font-size:11.5px;color:#63788d;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#41586e}
+  .pill.active{background:var(--celeste-deep);border-color:var(--celeste-deep);color:#fff}
+  .pill.toggle.active{background:var(--gold);border-color:var(--gold);color:#3A2E00}
+  input.search{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;min-width:170px;outline:none}
+  select.msel{border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);max-width:240px}
+  input.search:focus{border-color:var(--celeste)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{color:#63788d;font-weight:700;text-align:right;padding:8px 6px;font-size:12px;white-space:nowrap}
+  th.sortable{cursor:pointer;user-select:none}
+  th.sortable:hover{color:var(--celeste-deep)}
+  th.sorted{color:var(--celeste-deep)}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:7px 6px;text-align:right;border-top:1px solid var(--line)}
+  td.t{text-align:left;white-space:nowrap;font-weight:600}
+  td .conf-tag{font-size:10.5px;font-weight:800;letter-spacing:.05em;background:#EDF3FA;color:#41586e;border-radius:6px;padding:2px 6px;margin-left:6px}
+  tr.arg td{background:#EAF3FC}
+  tr.out td{opacity:.62}
+  .conf-head{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--celeste-deep);padding:14px 6px 4px}
+
+  .confgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .confcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;transition:box-shadow .15s}
+  .confcard:hover{box-shadow:0 6px 16px rgba(14,42,71,.12)}
+  .confcard.active{border:2px solid var(--celeste-deep)}
+  .confcard h4{font-size:14px;font-weight:800;margin-bottom:6px}
+  .confcard .row{display:flex;justify-content:space-between;font-size:12.5px;color:#41586e;padding:2px 0}
+  .confcard .row b{color:var(--ink)}
+
+  .cmp{display:grid;grid-template-columns:1fr;gap:14px}
+  .cmp-selects{display:flex;gap:12px;flex-wrap:wrap}
+  .cmp-selects select{flex:1;min-width:180px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;background:#fff;color:var(--ink)}
+  .cmp-head{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:17px;padding:4px 2px}
+  .cmp-row{display:grid;grid-template-columns:56px 1fr 110px 1fr 56px;align-items:center;gap:8px;padding:5px 0;font-size:13px}
+  .cmp-row .lbl{text-align:center;color:#63788d;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+  .cmp-row .num{font-weight:800;font-size:14px}
+  .cmp-row .num.l{text-align:right}
+  .barwrap{height:10px;background:#EDF3FA;border-radius:5px;overflow:hidden;display:flex}
+  .barwrap.l{justify-content:flex-end}
+  .barfill{height:100%;background:var(--celeste-dark);border-radius:5px}
+  .barfill.lead{background:var(--gold)}
+
+  .goalchart .grow{display:grid;grid-template-columns:120px 1fr 90px;align-items:center;gap:10px;padding:6px 0;font-size:13px}
+  .goalchart .gbar{height:20px;border-radius:6px;background:linear-gradient(90deg,var(--celeste-deep),var(--celeste));min-width:2px}
+  .goalchart .gl{font-weight:700}
+  .goalchart .gv{color:#41586e}
+
+  .stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .stage-col{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stage-col h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--celeste-deep);margin-bottom:10px}
+  .kline{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;border-bottom:1px dashed var(--line);gap:8px}
+  .kline:last-child{border-bottom:0}
+  .kline .w{font-weight:800}
+
+  .groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .gcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .gcard h3{font-size:14px;margin-bottom:8px}
+  .gcard table{font-size:12.5px}
+  .gcard td{padding:4px}
+  tr.q td{background:#F4FAF6}
+
+  /* Argentina page */
+  .badge-final{display:inline-block;background:var(--gold);color:#3A2E00;font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin:18px 0 0}
+  .final-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(14,42,71,.10);padding:26px;margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px}
+  .fc-teams{display:flex;align-items:center;gap:22px;font-size:26px;font-weight:800}
+  .fc-teams .flag{font-size:44px;display:block;text-align:center}
+  .fc-teams .tname{font-size:15px;font-weight:700;text-align:center;margin-top:2px}
+  .fc-vs{font-size:15px;font-weight:700;color:var(--draw);text-align:center}
+  .fc-meta{font-size:14px;color:#4a6076}
+  .countdown{display:flex;gap:10px}
+  .cd-box{background:var(--navy);color:#fff;border-radius:10px;padding:8px 12px;text-align:center;min-width:62px}
+  .cd-box b{display:block;font-size:22px}
+  .cd-box span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+  .timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .match{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--celeste);border-radius:12px;padding:14px 16px}
+  .match.win{border-left-color:var(--win)}
+  .match.next{border-left-color:var(--gold);background:linear-gradient(180deg,#FFFDF2,#fff)}
+  .m-stage{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#63788d;margin-bottom:6px}
+  .m-row{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;padding:2px 0}
+  .m-row .sc{font-weight:800}
+  .m-note{font-size:12px;color:#63788d;margin-top:6px}
+  .scorers tr.arg td{font-weight:700}
+
+  /* Showcase */
+  .show-card{background:linear-gradient(180deg,#0E2A47,#123B63);border-radius:18px;padding:28px 22px 20px;margin-top:18px;color:#DCE8F4;box-shadow:0 12px 32px rgba(14,42,71,.25);overflow:hidden}
+  .show-card.light{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 8px 22px rgba(14,42,71,.08)}
+  .show-card h3{font-size:20px;font-weight:800;margin-bottom:2px}
+  .show-card .sub2{font-size:13px;opacity:.75;margin-bottom:14px}
+  .show-card svg{width:100%;height:auto;display:block}
+  #tip{position:fixed;pointer-events:none;background:#0E2A47;color:#fff;font-size:12.5px;padding:8px 11px;border-radius:9px;box-shadow:0 6px 18px rgba(0,0,0,.3);opacity:0;transition:opacity .12s;z-index:99;max-width:230px;line-height:1.5}
+  .bk-link{fill:none;stroke-linecap:round;transition:stroke .15s,stroke-width .15s;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.2s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .bk-leaf{font-size:11px;font-weight:700;cursor:default}
+  .bk-leaf:hover{font-size:12.5px}
+  .rose-petal{transform-origin:var(--ox) var(--oy);animation:bloom .8s cubic-bezier(.2,.8,.3,1.1) backwards;cursor:default}
+  .rose-petal:hover{filter:brightness(1.25)}
+  @keyframes bloom{from{transform:scale(.05)}to{transform:scale(1)}}
+  .sc-flag{cursor:default;animation:pop .5s ease backwards}
+  .sc-flag:hover{font-size:22px}
+  @keyframes pop{from{opacity:0}to{opacity:1}}
+  img.crest{width:18px;height:18px;object-fit:contain;vertical-align:-4px;margin-right:2px}
+  img.crest-lg{width:52px;height:52px;object-fit:contain;display:block;margin:0 auto 4px}
+  #goalChart svg,#timeline svg,#scatterWrap svg,#orbitWrap svg,#roseWrap svg{width:100%;height:auto;display:block;max-width:100%}
+  #page-overview .chips{grid-template-columns:repeat(auto-fit,minmax(178px,1fr))}
+  .chip.span2{grid-column:span 2}
+  /* golden boot pictograph */
+  .gb-row{display:grid;grid-template-columns:210px 1fr auto;align-items:center;gap:14px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .gb-row:last-child{border-bottom:0}
+  .gb-name{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gb-name .r{color:#9fb2c6;font-weight:800;margin-right:6px}
+  .gb-balls{display:flex;flex-wrap:wrap;gap:5px}
+  .gb-ball{width:19px;height:19px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3D8BD4,#1D5B99);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);animation:pop .4s ease backwards}
+  .gb-ball.pen{background:radial-gradient(circle at 35% 30%,#FBD34D,#E3A80B)}
+  .gb-meta{font-size:12px;color:#63788d;white-space:nowrap;text-align:right}
+  .gb-meta b{color:var(--celeste-deep);font-size:15px}
+  /* clamping long sections */
+  .clamp{max-height:340px;overflow:hidden;position:relative}
+  .clamp::after{content:"";position:absolute;left:0;right:0;bottom:0;height:80px;background:linear-gradient(rgba(242,247,252,0),var(--bg));pointer-events:none}
+  .morewrap{text-align:center;margin:10px 0 0}
+  button.more{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 18px;font-size:13px;font-weight:700;color:var(--celeste-deep);cursor:pointer}
+  button.more:hover{border-color:var(--celeste)}
+  tr.morerow td{text-align:center;padding:9px;color:var(--celeste-deep);font-weight:700;cursor:pointer}
+  footer{margin-top:44px;font-size:12.5px;color:#63788d;text-align:center}
+  footer a{color:var(--celeste-deep)}
+  .page{display:none}
+  .page.active{display:block}
+
+  /* ===================== RESPONSIVE / MOBILE ===================== */
+  @media (max-width: 860px){
+    .wrap{padding:0 16px 48px}
+    h2{margin-top:26px}
+  }
+  @media (max-width: 600px){
+    header.hero{padding:22px 16px 14px}
+    .kicker{font-size:11px;letter-spacing:.12em}
+    h1{font-size:24px}
+    .sub{font-size:13px}
+    nav.tabs{gap:6px;margin-top:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+    nav.tabs::-webkit-scrollbar{display:none}
+    nav.tabs button{flex:0 0 auto;font-size:13px;padding:9px 14px;white-space:nowrap}
+    .wrap{padding:0 12px 44px}
+    h2{font-size:17px;margin-top:22px;flex-wrap:wrap}
+    .hint{display:block;margin:3px 0 0 14px}
+    .chips, #page-overview .chips{grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
+    .chip{padding:11px 12px}
+    .chip .v{font-size:18px}
+    .chip.span2{grid-column:span 2}
+    .confgrid{grid-template-columns:repeat(2,1fr);gap:9px}
+    .stages,.groups{grid-template-columns:1fr;gap:10px}
+    .show-card{padding:16px 12px 14px}
+    .show-card h3{font-size:16px}
+    .show-card .sub2{font-size:12px}
+    .panel{padding:8px 10px}
+    /* golden boot: name+tally on row 1, balls wrap on row 2 */
+    .gb-row{grid-template-columns:1fr auto;gap:5px 10px}
+    .gb-name{grid-row:1;grid-column:1;font-size:13px}
+    .gb-meta{grid-row:1;grid-column:2}
+    .gb-balls{grid-row:2;grid-column:1 / -1}
+    .gb-ball{width:16px;height:16px}
+    /* head-to-head controls stack */
+    .cmp-selects{flex-direction:column}
+    .cmp-selects select{width:100%;min-width:0;max-width:100%}
+    .cmp-head{font-size:14px}
+    .cmp-row{grid-template-columns:36px 1fr 74px 1fr 36px;gap:5px}
+    .cmp-row .num{font-size:12px}
+    .cmp-row .lbl{font-size:9.5px}
+    select.msel{max-width:100%}
+    input.search{min-width:0;flex:1 1 140px}
+    /* Argentina final card */
+    .final-card{padding:18px 14px;gap:12px;justify-content:center;text-align:center}
+    .fc-teams{gap:14px;font-size:20px}
+    .fc-teams .flag{font-size:34px}
+    img.crest-lg{width:42px;height:42px}
+    .countdown{flex-wrap:wrap;justify-content:center}
+    #tip{max-width:190px;font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">FIFA World Cup 2026 · Canada / USA / Mexico</div>
+    <h1>🏆 World Cup 2026 Dashboard</h1>
+    <div class="sub">48 teams · 104 matches · 16 host cities — data through 17 July 2026</div>
+  </div>
+  <nav class="tabs">
+    <button id="tabOverview" class="active" onclick="showPage('overview')">🏆 Overview</button>
+    <button id="tabDetails" onclick="showPage('details')">🔎 Details</button>
+    <button id="tabH2h" onclick="showPage('h2h')">⚔️ Head-to-Head</button>
+    <button id="tabArgentina" onclick="showPage('argentina')">🇦🇷 Argentina</button>
+  </nav>
+</header>
+
+<div id="tip"></div>
+<!-- ==================== TOURNAMENT PAGE ==================== -->
+<div class="wrap page active" id="page-overview">
+
+  <div class="chips" id="tChips"></div>
+
+  <div class="show-card">
+    <h3>🌀 The Orbit — every knockout match in one circle</h3>
+    <div class="sub2">32 teams around the rim, the trophy at the core. Hover any team to trace its run; the finalists' paths burn gold.</div>
+    <div id="orbitWrap"></div>
+  </div>
+
+  <h2><span class="bar"></span>Goal pulse — every day of the tournament</h2>
+  <div class="panel goalchart" id="goalChart"></div>
+
+  <h2><span class="bar"></span>Golden Boot race <span class="hint">each ball = a goal · gold = penalty</span></h2>
+  <div class="panel" id="goldenBoot"></div>
+
+  <div class="show-card">
+    <h3>🌹 The Rose of the Tournament</h3>
+    <div class="sub2">All 48 nations as petals, clustered by confederation, sized by your chosen metric. Hover a petal for details.</div>
+    <div class="controls"><select id="roseMetric" class="msel" onchange="renderRose(true)"></select></div>
+    <div id="roseWrap"></div>
+    <div id="roseLegend" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- ==================== DETAILS PAGE ==================== -->
+<div class="wrap page" id="page-details">
+
+  <h2><span class="bar"></span>Confederations <span class="hint">click a card to filter everything below</span></h2>
+  <div class="confgrid" id="confCards"></div>
+
+  <h2><span class="bar"></span>Team explorer <span class="hint">click column headers to sort</span></h2>
+  <div class="controls">
+    <span id="confPills"></span>
+    <button class="pill toggle" id="groupToggle" onclick="toggleGroupBy()">Group by confederation</button>
+    <input class="search" id="teamSearch" placeholder="🔎 Search team…" oninput="renderTeams()">
+  </div>
+  <div class="panel" id="teamTable"></div>
+
+  <h2><span class="bar"></span>Team stats <span class="hint">pick a metric, filter by confederation, click bars to select a country below</span></h2>
+  <div class="controls">
+    <span id="sConfPills"></span>
+    <select id="sTeamMetric" class="msel" onchange="renderTeamStats()"></select>
+    <button class="pill toggle" id="sPerMatch" onclick="togglePerMatch()">Per match</button>
+  </div>
+  <div class="panel goalchart" id="teamStatChart"></div>
+
+  <h2><span class="bar"></span>Player rankings <span class="hint">top 20 for the chosen metric</span></h2>
+  <div class="controls">
+    <select id="pCountry" class="msel" onchange="renderPlayerRank()"></select>
+    <select id="pPos" class="msel" onchange="renderPlayerRank()">
+      <option value="ALL">All positions</option><option value="GK">Goalkeepers</option>
+      <option value="DF">Defenders</option><option value="MF">Midfielders</option><option value="FW">Forwards</option>
+    </select>
+    <select id="pMetric" class="msel" onchange="renderPlayerRank()"></select>
+    <label style="font-size:12.5px;color:#63788d">min. minutes
+      <input id="pMinMin" type="number" value="0" min="0" step="90" style="width:70px;border:1px solid var(--line);border-radius:8px;padding:6px" oninput="renderPlayerRank()">
+    </label>
+  </div>
+  <div class="panel goalchart" id="playerRankChart"></div>
+
+  <div class="show-card light">
+    <h3>🎯 The Clinical Gap</h3>
+    <div class="sub2">Top shooters: shots <b>on target</b> (blue) vs goals actually <b>scored</b> (gold). The bar between them is wasted on-target shooting — short bar = ruthless finisher.</div>
+    <div class="controls" id="scPills"></div>
+    <div id="scatterWrap"></div>
+  </div>
+
+  <h2><span class="bar"></span>Knockout stage results</h2>
+  <div class="stages" id="stages"></div>
+  <div class="morewrap"><button class="more" id="stagesMore" onclick="toggleClamp('stages')"></button></div>
+
+  <h2><span class="bar"></span>Group stage — final tables</h2>
+  <div class="groups" id="groups"></div>
+  <div class="morewrap"><button class="more" id="groupsMore" onclick="toggleClamp('groups')"></button></div>
+  <p style="font-size:12px;color:#63788d;margin-top:14px">Player &amp; team stats (minutes, shots, fouls, cards) from FBref · players with ≥180 minutes or ≥1 goal/card (631 of 1,035).</p>
+</div>
+
+<!-- ==================== HEAD-TO-HEAD PAGE ==================== -->
+<div class="wrap page" id="page-h2h">
+  <h2><span class="bar"></span>Team vs team <span class="hint">radar + full stat bars for any two nations</span></h2>
+  <div class="panel cmp">
+    <div class="cmp-selects">
+      <select id="cmpA" onchange="renderCompare()"></select>
+      <select id="cmpB" onchange="renderCompare()"></select>
+    </div>
+    <div id="cmpBody"></div>
+  </div>
+
+  <h2><span class="bar"></span>Player vs player <span class="hint">any two of 631 players</span></h2>
+  <div class="panel cmp">
+    <div class="cmp-selects">
+      <select id="plA" onchange="renderPlayerCompare()"></select>
+      <select id="plB" onchange="renderPlayerCompare()"></select>
+    </div>
+    <div id="plCmpBody"></div>
+  </div>
+</div>
+
+<!-- ==================== ARGENTINA PAGE ==================== -->
+<div class="wrap page" id="page-argentina">
+  <div class="badge-final" id="heroBadge"></div>
+  <div class="final-card" id="finalCard"></div>
+
+  <h2><span class="bar"></span>Argentina by the numbers</h2>
+  <div class="chips" id="chips"></div>
+
+  <h2><span class="bar"></span>Road to the Final</h2>
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<div class="wrap">
+  <footer>
+    Data: <a href="https://www.football-data.org" target="_blank" rel="noopener">football-data.org</a> · snapshot taken 17 July 2026 ·
+    Static dashboard — scores do not auto-update.
+  </footer>
+</div>
+
+<script>
+const DATA = {"standings":[{"g":"A","t":[[1,"Mexico",3,3,0,0,6,0,9],[2,"South Africa",3,1,1,1,2,3,4],[3,"South Korea",3,1,0,2,2,3,3],[4,"Czechia",3,0,1,2,2,6,1]]},{"g":"B","t":[[1,"Switzerland",3,2,1,0,7,3,7],[2,"Canada",3,1,1,1,8,3,4],[3,"Bosnia-Herzegovina",3,1,1,1,5,6,4],[4,"Qatar",3,0,1,2,2,10,1]]},{"g":"C","t":[[1,"Brazil",3,2,1,0,7,1,7],[2,"Morocco",3,2,1,0,6,3,7],[3,"Scotland",3,1,0,2,1,4,3],[4,"Haiti",3,0,0,3,2,8,0]]},{"g":"D","t":[[1,"United States",3,2,0,1,8,4,6],[2,"Australia",3,1,1,1,2,2,4],[3,"Paraguay",3,1,1,1,2,4,4],[4,"Turkey",3,1,0,2,3,5,3]]},{"g":"E","t":[[1,"Germany",3,2,0,1,10,4,6],[2,"Ivory Coast",3,2,0,1,4,2,6],[3,"Ecuador",3,1,1,1,2,2,4],[4,"Curaçao",3,0,1,2,1,9,1]]},{"g":"F","t":[[1,"Netherlands",3,2,1,0,10,4,7],[2,"Japan",3,1,2,0,7,3,5],[3,"Sweden",3,1,1,1,7,7,4],[4,"Tunisia",3,0,0,3,2,12,0]]},{"g":"G","t":[[1,"Belgium",3,1,2,0,6,2,5],[2,"Egypt",3,1,2,0,5,3,5],[3,"Iran",3,0,3,0,3,3,3],[4,"New Zealand",3,0,1,2,4,10,1]]},{"g":"H","t":[[1,"Spain",3,2,1,0,5,0,7],[2,"Cape Verde Islands",3,0,3,0,2,2,3],[3,"Uruguay",3,0,2,1,3,4,2],[4,"Saudi Arabia",3,0,2,1,1,5,2]]},{"g":"I","t":[[1,"France",3,3,0,0,10,2,9],[2,"Norway",3,2,0,1,8,7,6],[3,"Senegal",3,1,0,2,8,6,3],[4,"Iraq",3,0,0,3,1,12,0]]},{"g":"J","t":[[1,"Argentina",3,3,0,0,8,1,9],[2,"Austria",3,1,1,1,6,6,4],[3,"Algeria",3,1,1,1,5,7,4],[4,"Jordan",3,0,0,3,3,8,0]]},{"g":"K","t":[[1,"Colombia",3,2,1,0,4,1,7],[2,"Portugal",3,1,2,0,6,1,5],[3,"Congo DR",3,1,1,1,4,3,4],[4,"Uzbekistan",3,0,0,3,2,11,0]]},{"g":"L","t":[[1,"England",3,2,1,0,6,2,7],[2,"Croatia",3,2,0,1,5,5,6],[3,"Ghana",3,1,1,1,2,2,4],[4,"Panama",3,0,0,3,0,4,0]]}],
+"matches":[["2026-06-11T19:00","FINISHED","GROUP_STAGE","A","Mexico","South Africa",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-12T02:00","FINISHED","GROUP_STAGE","A","South Korea","Czechia",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-12T19:00","FINISHED","GROUP_STAGE","B","Canada","Bosnia-Herzegovina",1,1,"REGULAR",null,null,"DRAW"],["2026-06-13T01:00","FINISHED","GROUP_STAGE","D","United States","Paraguay",4,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-13T19:00","FINISHED","GROUP_STAGE","B","Qatar","Switzerland",1,1,"REGULAR",null,null,"DRAW"],["2026-06-13T22:00","FINISHED","GROUP_STAGE","C","Brazil","Morocco",1,1,"REGULAR",null,null,"DRAW"],["2026-06-14T01:00","FINISHED","GROUP_STAGE","C","Haiti","Scotland",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-14T04:00","FINISHED","GROUP_STAGE","D","Australia","Turkey",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-14T17:00","FINISHED","GROUP_STAGE","E","Germany","Curaçao",7,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-14T20:00","FINISHED","GROUP_STAGE","F","Netherlands","Japan",2,2,"REGULAR",null,null,"DRAW"],["2026-06-14T23:00","FINISHED","GROUP_STAGE","E","Ivory Coast","Ecuador",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-15T02:00","FINISHED","GROUP_STAGE","F","Sweden","Tunisia",5,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-15T16:00","FINISHED","GROUP_STAGE","H","Spain","Cape Verde Islands",0,0,"REGULAR",null,null,"DRAW"],["2026-06-15T19:00","FINISHED","GROUP_STAGE","G","Belgium","Egypt",1,1,"REGULAR",null,null,"DRAW"],["2026-06-15T22:00","FINISHED","GROUP_STAGE","H","Saudi Arabia","Uruguay",1,1,"REGULAR",null,null,"DRAW"],["2026-06-16T01:00","FINISHED","GROUP_STAGE","G","Iran","New Zealand",2,2,"REGULAR",null,null,"DRAW"],["2026-06-16T19:00","FINISHED","GROUP_STAGE","I","France","Senegal",3,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-16T22:00","FINISHED","GROUP_STAGE","I","Iraq","Norway",1,4,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-17T01:00","FINISHED","GROUP_STAGE","J","Argentina","Algeria",3,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-17T04:00","FINISHED","GROUP_STAGE","J","Austria","Jordan",3,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-17T17:00","FINISHED","GROUP_STAGE","K","Portugal","Congo DR",1,1,"REGULAR",null,null,"DRAW"],["2026-06-17T20:00","FINISHED","GROUP_STAGE","L","England","Croatia",4,2,"REGULAR",null,null,"HOME_TEAM"],["2026-06-17T23:00","FINISHED","GROUP_STAGE","L","Ghana","Panama",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-18T02:00","FINISHED","GROUP_STAGE","K","Uzbekistan","Colombia",1,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-18T16:00","FINISHED","GROUP_STAGE","A","Czechia","South Africa",1,1,"REGULAR",null,null,"DRAW"],["2026-06-18T19:00","FINISHED","GROUP_STAGE","B","Switzerland","Bosnia-Herzegovina",4,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-18T22:00","FINISHED","GROUP_STAGE","B","Canada","Qatar",6,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-19T01:00","FINISHED","GROUP_STAGE","A","Mexico","South Korea",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-19T19:00","FINISHED","GROUP_STAGE","D","United States","Australia",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-19T22:00","FINISHED","GROUP_STAGE","C","Scotland","Morocco",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-20T00:30","FINISHED","GROUP_STAGE","C","Brazil","Haiti",3,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-20T03:00","FINISHED","GROUP_STAGE","D","Turkey","Paraguay",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-20T17:00","FINISHED","GROUP_STAGE","F","Netherlands","Sweden",5,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-20T20:00","FINISHED","GROUP_STAGE","E","Germany","Ivory Coast",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-21T00:00","FINISHED","GROUP_STAGE","E","Ecuador","Curaçao",0,0,"REGULAR",null,null,"DRAW"],["2026-06-21T04:00","FINISHED","GROUP_STAGE","F","Tunisia","Japan",0,4,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-21T16:00","FINISHED","GROUP_STAGE","H","Spain","Saudi Arabia",4,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-21T19:00","FINISHED","GROUP_STAGE","G","Belgium","Iran",0,0,"REGULAR",null,null,"DRAW"],["2026-06-21T22:00","FINISHED","GROUP_STAGE","H","Uruguay","Cape Verde Islands",2,2,"REGULAR",null,null,"DRAW"],["2026-06-22T01:00","FINISHED","GROUP_STAGE","G","New Zealand","Egypt",1,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-22T17:00","FINISHED","GROUP_STAGE","J","Argentina","Austria",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-22T21:00","FINISHED","GROUP_STAGE","I","France","Iraq",3,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-23T00:00","FINISHED","GROUP_STAGE","I","Norway","Senegal",3,2,"REGULAR",null,null,"HOME_TEAM"],["2026-06-23T03:00","FINISHED","GROUP_STAGE","J","Jordan","Algeria",1,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-23T17:00","FINISHED","GROUP_STAGE","K","Portugal","Uzbekistan",5,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-23T20:00","FINISHED","GROUP_STAGE","L","England","Ghana",0,0,"REGULAR",null,null,"DRAW"],["2026-06-23T23:00","FINISHED","GROUP_STAGE","L","Panama","Croatia",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-24T02:00","FINISHED","GROUP_STAGE","K","Colombia","Congo DR",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-24T19:00","FINISHED","GROUP_STAGE","B","Switzerland","Canada",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-24T19:00","FINISHED","GROUP_STAGE","B","Bosnia-Herzegovina","Qatar",3,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-24T22:00","FINISHED","GROUP_STAGE","C","Morocco","Haiti",4,2,"REGULAR",null,null,"HOME_TEAM"],["2026-06-24T22:00","FINISHED","GROUP_STAGE","C","Scotland","Brazil",0,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-25T01:00","FINISHED","GROUP_STAGE","A","Czechia","Mexico",0,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-25T01:00","FINISHED","GROUP_STAGE","A","South Africa","South Korea",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-25T20:00","FINISHED","GROUP_STAGE","E","Ecuador","Germany",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-25T20:00","FINISHED","GROUP_STAGE","E","Curaçao","Ivory Coast",0,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-25T23:00","FINISHED","GROUP_STAGE","F","Tunisia","Netherlands",1,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-25T23:00","FINISHED","GROUP_STAGE","F","Japan","Sweden",1,1,"REGULAR",null,null,"DRAW"],["2026-06-26T02:00","FINISHED","GROUP_STAGE","D","Turkey","United States",3,2,"REGULAR",null,null,"HOME_TEAM"],["2026-06-26T02:00","FINISHED","GROUP_STAGE","D","Paraguay","Australia",0,0,"REGULAR",null,null,"DRAW"],["2026-06-26T19:00","FINISHED","GROUP_STAGE","I","Norway","France",1,4,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-26T19:00","FINISHED","GROUP_STAGE","I","Senegal","Iraq",5,0,"REGULAR",null,null,"HOME_TEAM"],["2026-06-27T00:00","FINISHED","GROUP_STAGE","H","Uruguay","Spain",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-27T00:00","FINISHED","GROUP_STAGE","H","Cape Verde Islands","Saudi Arabia",0,0,"REGULAR",null,null,"DRAW"],["2026-06-27T03:00","FINISHED","GROUP_STAGE","G","New Zealand","Belgium",1,5,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-27T03:00","FINISHED","GROUP_STAGE","G","Egypt","Iran",1,1,"REGULAR",null,null,"DRAW"],["2026-06-27T21:00","FINISHED","GROUP_STAGE","L","Panama","England",0,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-27T21:00","FINISHED","GROUP_STAGE","L","Croatia","Ghana",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-27T23:30","FINISHED","GROUP_STAGE","K","Colombia","Portugal",0,0,"REGULAR",null,null,"DRAW"],["2026-06-27T23:30","FINISHED","GROUP_STAGE","K","Congo DR","Uzbekistan",3,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-28T02:00","FINISHED","GROUP_STAGE","J","Jordan","Argentina",1,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-28T02:00","FINISHED","GROUP_STAGE","J","Algeria","Austria",3,3,"REGULAR",null,null,"DRAW"],["2026-06-28T19:00","FINISHED","LAST_32",null,"South Africa","Canada",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-29T17:00","FINISHED","LAST_32",null,"Brazil","Japan",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-06-29T20:30","FINISHED","LAST_32",null,"Germany","Paraguay",4,5,"PENALTY_SHOOTOUT",3,4,"AWAY_TEAM"],["2026-06-30T01:00","FINISHED","LAST_32",null,"Netherlands","Morocco",3,4,"PENALTY_SHOOTOUT",2,3,"AWAY_TEAM"],["2026-06-30T17:00","FINISHED","LAST_32",null,"Ivory Coast","Norway",1,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-06-30T21:00","FINISHED","LAST_32",null,"France","Sweden",3,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-01T02:00","FINISHED","LAST_32",null,"Mexico","Ecuador",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-01T16:00","FINISHED","LAST_32",null,"England","Congo DR",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-07-01T20:00","FINISHED","LAST_32",null,"Belgium","Senegal",3,2,"EXTRA_TIME",null,null,"HOME_TEAM"],["2026-07-02T00:00","FINISHED","LAST_32",null,"United States","Bosnia-Herzegovina",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-02T19:00","FINISHED","LAST_32",null,"Spain","Austria",3,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-02T23:00","FINISHED","LAST_32",null,"Portugal","Croatia",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-07-03T03:00","FINISHED","LAST_32",null,"Switzerland","Algeria",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-03T18:00","FINISHED","LAST_32",null,"Australia","Egypt",3,5,"PENALTY_SHOOTOUT",2,4,"AWAY_TEAM"],["2026-07-03T22:00","FINISHED","LAST_32",null,"Argentina","Cape Verde Islands",3,2,"EXTRA_TIME",null,null,"HOME_TEAM"],["2026-07-04T01:30","FINISHED","LAST_32",null,"Colombia","Ghana",1,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-04T17:00","FINISHED","LAST_16",null,"Canada","Morocco",0,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-04T21:00","FINISHED","LAST_16",null,"Paraguay","France",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-05T20:00","FINISHED","LAST_16",null,"Brazil","Norway",1,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-06T01:00","FINISHED","LAST_16",null,"Mexico","England",2,3,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-06T19:00","FINISHED","LAST_16",null,"Portugal","Spain",0,1,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-07T00:00","FINISHED","LAST_16",null,"United States","Belgium",1,4,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-07T16:00","FINISHED","LAST_16",null,"Argentina","Egypt",3,2,"REGULAR",null,null,"HOME_TEAM"],["2026-07-07T20:00","FINISHED","LAST_16",null,"Switzerland","Colombia",4,3,"PENALTY_SHOOTOUT",4,3,"HOME_TEAM"],["2026-07-09T20:00","FINISHED","QUARTER_FINALS",null,"France","Morocco",2,0,"REGULAR",null,null,"HOME_TEAM"],["2026-07-10T19:00","FINISHED","QUARTER_FINALS",null,"Spain","Belgium",2,1,"REGULAR",null,null,"HOME_TEAM"],["2026-07-11T21:00","FINISHED","QUARTER_FINALS",null,"Norway","England",1,2,"EXTRA_TIME",null,null,"AWAY_TEAM"],["2026-07-12T01:00","FINISHED","QUARTER_FINALS",null,"Argentina","Switzerland",3,1,"EXTRA_TIME",null,null,"HOME_TEAM"],["2026-07-14T19:00","FINISHED","SEMI_FINALS",null,"France","Spain",0,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-15T19:00","FINISHED","SEMI_FINALS",null,"England","Argentina",1,2,"REGULAR",null,null,"AWAY_TEAM"],["2026-07-18T21:00","TIMED","THIRD_PLACE",null,"France","England",null,null,"REGULAR",null,null,null],["2026-07-19T19:00","TIMED","FINAL",null,"Spain","Argentina",null,null,"REGULAR",null,null,null]],
+"scorers":[["Kylian Mbappé","France",8,3,1],["Lionel Messi","Argentina",8,4,null],["Erling Haaland","Norway",7,null,null],["Harry Kane","England",6,1,2],["Jude Bellingham","England",6,1,null],["Mikel Oyarzabal","Spain",5,1,1],["Ousmane Dembélé","France",5,2,null],["Julián Quiñones","Mexico",4,1,null],["Vinicius Junior","Brazil",4,1,null],["Ismaïla Sarr","Senegal",4,1,null],["Raúl Jiménez","Mexico",3,null,1],["Folarin Balogun","United States",3,null,null],["Ismael Saibari","Morocco",3,null,null],["Kai Havertz","Germany",3,null,1],["Deniz Undav","Germany",3,2,null],["Elijah Just","New Zealand",3,null,null],["Yoane Wissa","Congo DR",3,null,1],["Johan Manzambi","Switzerland",3,2,null],["Jonathan David","Canada",3,null,null],["Matheus Cunha","Brazil",3,null,null],["Brian Brobbey","Netherlands",3,null,null],["Cody Gakpo","Netherlands",3,1,null],["Cristiano Ronaldo","Portugal",3,null,1],["Romelu Lukaku","Belgium",3,1,null],["Lautaro Martínez","Argentina",3,1,1]]};
+
+const FLAG = {"Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰🇷","Czechia":"🇨🇿","Switzerland":"🇨🇭","Canada":"🇨🇦","Bosnia-Herzegovina":"🇧🇦","Qatar":"🇶🇦","Brazil":"🇧🇷","Morocco":"🇲🇦","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Haiti":"🇭🇹","United States":"🇺🇸","Australia":"🇦🇺","Paraguay":"🇵🇾","Turkey":"🇹🇷","Germany":"🇩🇪","Ivory Coast":"🇨🇮","Ecuador":"🇪🇨","Curaçao":"🇨🇼","Netherlands":"🇳🇱","Japan":"🇯🇵","Sweden":"🇸🇪","Tunisia":"🇹🇳","Belgium":"🇧🇪","Egypt":"🇪🇬","Iran":"🇮🇷","New Zealand":"🇳🇿","Spain":"🇪🇸","Cape Verde Islands":"🇨🇻","Uruguay":"🇺🇾","Saudi Arabia":"🇸🇦","France":"🇫🇷","Norway":"🇳🇴","Senegal":"🇸🇳","Iraq":"🇮🇶","Argentina":"🇦🇷","Austria":"🇦🇹","Algeria":"🇩🇿","Jordan":"🇯🇴","Colombia":"🇨🇴","Portugal":"🇵🇹","Congo DR":"🇨🇩","Uzbekistan":"🇺🇿","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatia":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦"};
+const CONF = {"Argentina":"CONMEBOL","Brazil":"CONMEBOL","Colombia":"CONMEBOL","Ecuador":"CONMEBOL","Paraguay":"CONMEBOL","Uruguay":"CONMEBOL",
+"Switzerland":"UEFA","Czechia":"UEFA","Bosnia-Herzegovina":"UEFA","Scotland":"UEFA","Turkey":"UEFA","Germany":"UEFA","Netherlands":"UEFA","Sweden":"UEFA","Belgium":"UEFA","Spain":"UEFA","France":"UEFA","Norway":"UEFA","Austria":"UEFA","Portugal":"UEFA","England":"UEFA","Croatia":"UEFA",
+"Mexico":"CONCACAF","Canada":"CONCACAF","United States":"CONCACAF","Haiti":"CONCACAF","Curaçao":"CONCACAF","Panama":"CONCACAF",
+"South Korea":"AFC","Qatar":"AFC","Australia":"AFC","Japan":"AFC","Iran":"AFC","Saudi Arabia":"AFC","Iraq":"AFC","Jordan":"AFC","Uzbekistan":"AFC",
+"South Africa":"CAF","Morocco":"CAF","Ivory Coast":"CAF","Tunisia":"CAF","Egypt":"CAF","Cape Verde Islands":"CAF","Senegal":"CAF","Algeria":"CAF","Congo DR":"CAF","Ghana":"CAF",
+"New Zealand":"OFC"};
+const CONF_EMOJI = {UEFA:"🇪🇺",CONMEBOL:"🌎",CONCACAF:"🦅",CAF:"🌍",AFC:"🌏",OFC:"🥝"};
+const SHORT = {"Bosnia-Herzegovina":"Bosnia","United States":"USA","Cape Verde Islands":"Cape Verde","Switzerland":"Switzerl.","South Africa":"S. Africa","South Korea":"S. Korea","Ivory Coast":"Iv. Coast","New Zealand":"N. Zealand","Saudi Arabia":"S. Arabia","Netherlands":"Netherl."};
+const shortN = t => SHORT[t] || t;
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+function showTip(e, html){ const t = document.getElementById("tip"); t.innerHTML = html; t.style.opacity = 1;
+  t.style.left = Math.min(e.clientX + 14, (window.innerWidth || 1200) - 250) + "px"; t.style.top = (e.clientY + 14) + "px"; }
+function hideTip(){ document.getElementById("tip").style.opacity = 0; }
+function mWinner(m){ return m[11] === "HOME_TEAM" ? m[4] : m[11] === "AWAY_TEAM" ? m[5] : null; }
+function mLabel(m){ return STAGE_LABEL[m[2]] + ": " + m[4] + " " + (m[1] === "FINISHED" ? scoreStr(m) : "vs") + " " + m[5]; }
+const BURL = "https://r2.thesportsdb.com/images/media/team/badge/";
+const BADGE = {"Argentina":"3zplhu1726167477.png","Spain":"ncgqyr1726166942.png","France":"p3n0z51726166851.png","England":"vf5ttc1726166739.png","Mexico":"3rmosi1748525208.png","South Africa":"xjz9j91553368824.png","South Korea":"a8nqfs1589564916.png","Czechia":"1o0cx31654205806.png","Switzerland":"mb7yqe1717365808.png","Canada":"2t631f1595154867.png","Bosnia-Herzegovina":"wtqqst1455463120.png","Qatar":"rs3ir31642708685.png","Brazil":"jl6dip1726167280.png","Morocco":"hbmwkj1731791275.png","Scotland":"3691i11552945146.png","Haiti":"gml8wx1598135302.png","United States":"21f0oi1597948195.png","Australia":"eylq8x1781926138.png","Paraguay":"khgav41553419195.png","Turkey":"70c4oo1591982459.png","Germany":"1xysi51726167152.png","Ivory Coast":"rwxuuu1455465643.png","Ecuador":"47wv2y1591989301.png","Curaçao":"itygvb1600955363.png","Netherlands":"1p0hr41593787110.png","Japan":"ffsyxz1591989843.png","Sweden":"h5adzg1591981772.png","Tunisia":"7r89rg1526727277.png","Belgium":"8xlvxv1592062265.png","Egypt":"uheyzo1742102234.png","Iran":"uttpvw1455465617.png","New Zealand":"91xpk81742982935.png","Cape Verde Islands":"5jn0o71593280376.png","Uruguay":"6vjbr11726167756.png","Saudi Arabia":"24xwpq1594125742.png","Norway":"gyfn811591973155.png","Senegal":"slayb01780546342.png","Iraq":"aqidfn1742100110.png","Austria":"874p631628721400.png","Algeria":"rrwpry1455460218.png","Jordan":"59fo2s1742100034.png","Colombia":"4ymyku1691180081.png","Portugal":"swqvpy1455466083.png","Congo DR":"s85jjw1728749022.png","Uzbekistan":"u5bgze1597943605.png","Croatia":"vvtsyu1455465317.png","Ghana":"j589xw1751526124.png","Panama":"asp2ck1715849700.png"};
+function crest(t, cls){
+  return BADGE[t] ? '<img class="' + (cls || "crest") + '" src="' + BURL + BADGE[t] + '/tiny" alt="" loading="lazy" onerror="this.remove()">' : "";
+}
+function crestURL(t){ return BADGE[t] ? BURL + BADGE[t] + "/small" : ""; }
+/* shared radar chart builder: vals normalized 0..1 */
+function radarSVG(labels, A, B, nameA, nameB, colA, colB){
+  const n = labels.length, R = 112;
+  const pt = (v, i) => { const a = i * 360 / n; const [x,y] = [ (v*R) * Math.cos((a-90)*Math.PI/180), (v*R) * Math.sin((a-90)*Math.PI/180)]; return x.toFixed(1) + "," + y.toFixed(1); };
+  let grid = "";
+  [0.25, 0.5, 0.75, 1].forEach(f => {
+    grid += '<polygon points="' + labels.map((_, i) => pt(f, i)).join(" ") + '" fill="none" stroke="#DCE8F4" stroke-width="1"/>';
+  });
+  labels.forEach((l, i) => {
+    const [x2,y2] = pt(1, i).split(",");
+    grid += '<line x1="0" y1="0" x2="' + x2 + '" y2="' + y2 + '" stroke="#DCE8F4"/>';
+    const a = i * 360 / n, lx = 1.24 * R * Math.cos((a-90)*Math.PI/180), ly = 1.24 * R * Math.sin((a-90)*Math.PI/180);
+    grid += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 3).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#63788d">' + l + '</text>';
+  });
+  const poly = (V, c) => '<polygon points="' + V.map((v, i) => pt(Math.max(0.02, Math.min(v, 1)), i)).join(" ") + '" fill="' + c + '33" stroke="' + c + '" stroke-width="2.5" stroke-linejoin="round"/>';
+  return '<div style="text-align:center"><svg viewBox="-165 -150 330 300" style="max-width:360px;margin:0 auto">' + grid + poly(A, colA) + poly(B, colB) + '</svg>' +
+    '<div style="font-size:12px;font-weight:700"><span style="color:' + colA + '">■ ' + nameA + '</span> &nbsp; <span style="color:' + colB + '">■ ' + nameB + '</span></div></div>';
+}
+const CONFS = ["UEFA","CONMEBOL","CONCACAF","CAF","AFC","OFC"];
+const fl = n => FLAG[n] || "🏳️";
+const STAGE_LABEL = {GROUP_STAGE:"Group", LAST_32:"Round of 32", LAST_16:"Round of 16", QUARTER_FINALS:"Quarter-final", SEMI_FINALS:"Semi-final", THIRD_PLACE:"Third place", FINAL:"Final"};
+const STAGE_ORDER = {GROUP_STAGE:0, LAST_32:1, LAST_16:2, QUARTER_FINALS:3, SEMI_FINALS:4, THIRD_PLACE:4, FINAL:5};
+const REACH_LABEL = ["Groups","R32","R16","QF","SF","Final"];
+const ARG = "Argentina";
+const M = DATA.matches;
+
+function localDate(utc){
+  const d = new Date(utc + ":00Z");
+  return d.toLocaleString(undefined, {weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+}
+function scoreStr(m){
+  let s = m[6] + "–" + m[7];
+  if (m[8] === "EXTRA_TIME") s += " aet";
+  if (m[8] === "PENALTY_SHOOTOUT") s += " (" + m[9] + "–" + m[10] + " p)";
+  return s;
+}
+
+/* ================= TEAM STATS ================= */
+const TEAMS = {};
+function team(n){ return TEAMS[n] || (TEAMS[n] = {name:n, conf:CONF[n], p:0, w:0, d:0, l:0, gf:0, ga:0, reach:0, alive:false}); }
+M.forEach(m => {
+  const h = team(m[4]), a = team(m[5]);
+  const o = STAGE_ORDER[m[2]];
+  h.reach = Math.max(h.reach, o); a.reach = Math.max(a.reach, o);
+  if (m[1] !== "FINISHED"){ h.alive = true; a.alive = true; return; }
+  h.p++; a.p++; h.gf += m[6]; h.ga += m[7]; a.gf += m[7]; a.ga += m[6];
+  if (m[11] === "DRAW"){ h.d++; a.d++; }
+  else if (m[11] === "HOME_TEAM"){ h.w++; a.l++; }
+  else { a.w++; h.l++; }
+});
+const TEAM_LIST = Object.values(TEAMS);
+
+/* ================= TOURNAMENT CHIPS ================= */
+const fin = M.filter(m => m[1] === "FINISHED");
+const goals = fin.reduce((s,m) => s + m[6] + m[7], 0);
+const ets = fin.filter(m => m[8] === "EXTRA_TIME").length;
+const pens = fin.filter(m => m[8] === "PENALTY_SHOOTOUT").length;
+let big = fin[0];
+fin.forEach(m => { if (Math.abs(m[6]-m[7]) > Math.abs(big[6]-big[7])) big = m; });
+const cleanSheets = fin.filter(m => m[6] === 0).length + fin.filter(m => m[7] === 0).length;
+const bigTeam = big[6] > big[7] ? big[4] : big[5], bigOpp = big[6] > big[7] ? big[5] : big[4];
+document.getElementById("tChips").innerHTML = [
+  [fin.length + " / 104", "Matches played"],
+  [goals, "Goals"],
+  [(goals/fin.length).toFixed(2), "Goals per match"],
+  [fin.filter(m=>m[11]==="DRAW").length, "Draws"],
+  [cleanSheets, "Clean sheets"],
+  [ets, "Extra-time games"],
+  [pens, "Penalty shootouts"],
+  [fl(bigTeam) + " " + Math.max(big[6],big[7]) + "–" + Math.min(big[6],big[7]) + " " + fl(bigOpp), "Biggest win"]
+].map(c => '<div class="chip"><div class="v">' + c[0] + '</div><div class="k">' + c[1] + '</div></div>').join("");
+
+/* ================= CONFEDERATION CARDS (clickable filter) ================= */
+let confFilter = "ALL";
+function confStats(c){
+  const ts = TEAM_LIST.filter(t => t.conf === c);
+  return {
+    n: ts.length,
+    alive: ts.filter(t => t.alive).length,
+    w: ts.reduce((s,t)=>s+t.w,0), d: ts.reduce((s,t)=>s+t.d,0), l: ts.reduce((s,t)=>s+t.l,0),
+    gf: ts.reduce((s,t)=>s+t.gf,0),
+    best: ts.reduce((b,t)=>Math.max(b,t.reach),0)
+  };
+}
+function renderConfCards(){
+  document.getElementById("confCards").innerHTML = CONFS.map(c => {
+    const s = confStats(c);
+    return '<div class="confcard' + (confFilter === c ? " active" : "") + '" onclick="setConf(\'' + c + '\')">' +
+      '<h4>' + CONF_EMOJI[c] + ' ' + c + '</h4>' +
+      '<div class="row"><span>Teams</span><b>' + s.n + '</b></div>' +
+      '<div class="row"><span>Still alive</span><b>' + (s.alive || "—") + '</b></div>' +
+      '<div class="row"><span>W–D–L</span><b>' + s.w + '–' + s.d + '–' + s.l + '</b></div>' +
+      '<div class="row"><span>Goals</span><b>' + s.gf + '</b></div>' +
+      '<div class="row"><span>Best run</span><b>' + REACH_LABEL[s.best] + '</b></div>' +
+    '</div>';
+  }).join("");
+}
+function setConf(c){
+  confFilter = (confFilter === c) ? "ALL" : c;
+  renderConfCards(); renderPills(); renderTeams(); renderStages(); renderGroups(); renderGoalChart();
+}
+
+/* ================= TEAM EXPLORER ================= */
+let sortKey = "reach", sortDir = -1, groupBy = false;
+function renderPills(){
+  document.getElementById("confPills").innerHTML =
+    ['ALL'].concat(CONFS).map(c => '<button class="pill' + (confFilter === c ? " active" : "") + '" onclick="setConf(\'' + c + '\')">' + (c === 'ALL' ? '🌐 All' : (CONF_EMOJI[c] + ' ' + c)) + '</button>').join(" ");
+}
+function toggleGroupBy(){
+  groupBy = !groupBy;
+  document.getElementById("groupToggle").classList.toggle("active", groupBy);
+  renderTeams();
+}
+function sortBy(k){
+  if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = (k === "name" || k === "conf") ? 1 : -1; }
+  renderTeams();
+}
+const COLS = [["name","Team"],["conf","Conf"],["p","P"],["w","W"],["d","D"],["l","L"],["gf","GF"],["ga","GA"],["gd","GD"],["reach","Reached"]];
+function teamRows(list){
+  return list.map(t => {
+    return '<tr class="' + (t.name === ARG ? "arg" : (!t.alive ? "out" : "")) + '">' +
+      '<td class="t">' + crest(t.name) + ' ' + t.name + (t.alive ? ' ⭐' : '') + '</td>' +
+      '<td style="text-align:left"><span class="conf-tag">' + t.conf + '</span></td>' +
+      '<td>' + t.p + '</td><td>' + t.w + '</td><td>' + t.d + '</td><td>' + t.l + '</td>' +
+      '<td>' + t.gf + '</td><td>' + t.ga + '</td><td>' + (t.gf - t.ga) + '</td>' +
+      '<td><b>' + REACH_LABEL[t.reach] + '</b></td></tr>';
+  }).join("");
+}
+function headerRow(){
+  return '<tr>' + COLS.map(c =>
+    '<th class="sortable' + (sortKey === c[0] ? ' sorted' : '') + '" onclick="sortBy(\'' + c[0] + '\')">' + c[1] + (sortKey === c[0] ? (sortDir === 1 ? ' ▲' : ' ▼') : '') + '</th>').join("") + '</tr>';
+}
+const EXP = {};
+function toggleExp(k, fn){ EXP[k] = !EXP[k]; fn(); }
+function moreRow(k, hidden, fnName){
+  return '<tr class="morerow"><td colspan="10" onclick="toggleExp(\'' + k + '\', ' + fnName + ')">' +
+    (EXP[k] ? "▴ Collapse" : "▾ Show " + hidden + " more") + '</td></tr>';
+}
+function renderTeams(){
+  const q = (document.getElementById("teamSearch").value || "").toLowerCase();
+  let list = TEAM_LIST.filter(t => (confFilter === "ALL" || t.conf === confFilter) && t.name.toLowerCase().includes(q));
+  const val = t => sortKey === "gd" ? t.gf - t.ga : t[sortKey];
+  list.sort((a,b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * sortDir || a.name.localeCompare(b.name); });
+  const el = document.getElementById("teamTable");
+  if (!list.length){ el.innerHTML = '<p style="padding:14px;color:#63788d">No teams match.</p>'; return; }
+  if (groupBy){
+    const CAP = 4;
+    el.innerHTML = CONFS.filter(c => list.some(t => t.conf === c)).map(c => {
+      const cl = list.filter(t => t.conf === c);
+      const shown = EXP.teams ? cl : cl.slice(0, CAP);
+      return '<div class="conf-head">' + CONF_EMOJI[c] + ' ' + c + '</div><table>' + headerRow() + teamRows(shown) +
+        (cl.length > CAP && !EXP.teams ? '<tr class="morerow"><td colspan="10" onclick="toggleExp(\'teams\', renderTeams)">▾ ' + (cl.length - CAP) + ' more</td></tr>' : '') + '</table>';
+    }).join("") + (EXP.teams ? '<div class="morewrap"><button class="more" onclick="toggleExp(\'teams\', renderTeams)">▴ Collapse</button></div>' : '');
+  } else {
+    const CAP = 12;
+    const shown = (EXP.teams || list.length <= CAP) ? list : list.slice(0, CAP);
+    el.innerHTML = '<table>' + headerRow() + teamRows(shown) +
+      (list.length > CAP ? moreRow("teams", list.length - CAP, "renderTeams") : '') + '</table>';
+  }
+}
+
+/* ================= HEAD-TO-HEAD ================= */
+function fillSelects(){
+  const opts = TEAM_LIST.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t => '<option value="' + t.name + '">' + fl(t.name) + ' ' + t.name + '</option>').join("");
+  const A = document.getElementById("cmpA"), B = document.getElementById("cmpB");
+  A.innerHTML = opts; B.innerHTML = opts;
+  A.value = "Argentina"; B.value = "Spain";
+}
+function cmpRow(label, va, vb, fmt){
+  const f = fmt || (x => x);
+  const max = Math.max(va, vb) || 1;
+  const aLead = va >= vb, bLead = vb > va;
+  return '<div class="cmp-row">' +
+    '<div class="num l">' + f(va) + '</div>' +
+    '<div class="barwrap l"><div class="barfill' + (aLead ? ' lead' : '') + '" style="width:' + (va/max*100) + '%"></div></div>' +
+    '<div class="lbl">' + label + '</div>' +
+    '<div class="barwrap"><div class="barfill' + (bLead ? ' lead' : '') + '" style="width:' + (vb/max*100) + '%"></div></div>' +
+    '<div class="num">' + f(vb) + '</div></div>';
+}
+function renderCompare(){
+  const a = TEAMS[document.getElementById("cmpA").value];
+  const b = TEAMS[document.getElementById("cmpB").value];
+  if (!a || !b) return;
+  const h2h = M.filter(m => m[1] === "FINISHED" && ((m[4] === a.name && m[5] === b.name) || (m[4] === b.name && m[5] === a.name)));
+  let radar = "";
+  const FBS = window.__FBSQ;
+  if (FBS){
+    const fa = FBS.find(s => s.team === a.name), fb = FBS.find(s => s.team === b.name);
+    if (fa && fb){
+      const mx = k => Math.max(...FBS.map(s => k(s))) || 1;
+      const K = [
+        ["Attack", s => s.gls / s.mp], ["Shot volume", s => s.sh / s.mp], ["Precision", s => s.sh ? s.sot / s.sh : 0],
+        ["Efficiency", s => s.sh ? s.gls / s.sh : 0], ["Discipline", s => 1 - ((s.y + s.r) / s.mp) / mx(t => (t.y + t.r) / t.mp)], ["Fouls won", s => s.fld / s.mp]
+      ];
+      const norm = (s, k, f) => k === "Discipline" ? f(s) : f(s) / mx(f);
+      radar = radarSVG(K.map(x => x[0]), K.map(x => norm(fa, x[0], x[1])), K.map(x => norm(fb, x[0], x[1])), a.name, b.name, "#1D5B99", "#E4572E");
+    }
+  }
+  document.getElementById("cmpBody").innerHTML =
+    '<div class="cmp-head"><span>' + crest(a.name) + ' ' + fl(a.name) + ' ' + a.name + '</span><span>' + b.name + ' ' + fl(b.name) + ' ' + crest(b.name) + '</span></div>' + radar +
+    cmpRow("Matches", a.p, b.p) +
+    cmpRow("Wins", a.w, b.w) +
+    cmpRow("Draws", a.d, b.d) +
+    cmpRow("Losses", a.l, b.l) +
+    cmpRow("Goals for", a.gf, b.gf) +
+    cmpRow("Goals against", a.ga, b.ga) +
+    cmpRow("Win %", a.p ? Math.round(a.w/a.p*100) : 0, b.p ? Math.round(b.w/b.p*100) : 0, x => x + "%") +
+    '<div style="font-size:12.5px;color:#63788d;margin-top:10px">' +
+    (h2h.length ? '⚔️ Met this tournament: ' + h2h.map(m => STAGE_LABEL[m[2]] + ' — ' + m[4] + ' ' + scoreStr(m) + ' ' + m[5]).join(" · ")
+                : '⚔️ These teams have not met in this tournament' +
+                  ((a.alive && b.alive) ? ' — yet. They play the Final on Sunday!' : '.')) +
+    '</div>';
+}
+
+/* ================= GOAL PULSE (area chart, goals per day) ================= */
+const STAGE_TINT = {GROUP_STAGE:"#75AADB", LAST_32:"#1E9E5A", LAST_16:"#9B5DE5", QUARTER_FINALS:"#E4572E", SEMI_FINALS:"#F5C518"};
+function renderGoalChart(){
+  const ms = fin.filter(m => confFilter === "ALL" || CONF[m[4]] === confFilter || CONF[m[5]] === confFilter);
+  const byDay = {}, stageOf = {};
+  ms.forEach(m => { const d = m[0].slice(0, 10); byDay[d] = (byDay[d] || 0) + m[6] + m[7]; stageOf[d] = m[2]; });
+  const d0 = new Date("2026-06-11"), d1 = new Date("2026-07-15");
+  const days = [];
+  for (let d = new Date(d0); d <= d1; d.setDate(d.getDate() + 1)){
+    const k = d.toISOString().slice(0, 10);
+    days.push({k, g: byDay[k] || 0, st: stageOf[k]});
+  }
+  const W = 780, H = 250, mL = 34, mB = 34, mT = 18;
+  const maxG = Math.max(...days.map(d => d.g)) || 1;
+  const X = i => mL + i / (days.length - 1) * (W - mL - 12);
+  const Y = g => H - mB - g / maxG * (H - mT - mB);
+  let bands = "", i0 = 0;
+  for (let i = 1; i <= days.length; i++){
+    if (i === days.length || (days[i].st || days[i-1].st) !== (days[i0].st)){
+      const st = days[i0].st;
+      if (st) bands += '<rect x="' + X(i0 - 0.5).toFixed(1) + '" y="' + mT + '" width="' + (X(i - 0.5) - X(i0 - 0.5)).toFixed(1) + '" height="' + (H - mT - mB) + '" fill="' + STAGE_TINT[st] + '" opacity="0.08"/>' +
+        '<text x="' + ((X(i0 - 0.5) + X(i - 0.5)) / 2).toFixed(1) + '" y="' + (H - mB + 26) + '" text-anchor="middle" font-size="9.5" font-weight="800" fill="' + STAGE_TINT[st] + '">' + STAGE_LABEL[st].toUpperCase().replace("ROUND OF ", "R") + '</text>';
+      i0 = i;
+    }
+  }
+  let area = "M" + X(0) + " " + Y(days[0].g), line = area;
+  for (let i = 1; i < days.length; i++){
+    const xm = (X(i - 1) + X(i)) / 2;
+    const seg = " Q" + xm.toFixed(1) + " " + Y(days[i-1].g).toFixed(1) + " " + ((X(i-1)+X(i))/2).toFixed(1) + " " + ((Y(days[i-1].g)+Y(days[i].g))/2).toFixed(1) + " T" + X(i).toFixed(1) + " " + Y(days[i].g).toFixed(1);
+    area += seg; line += seg;
+  }
+  area += " L" + X(days.length - 1).toFixed(1) + " " + (H - mB) + " L" + X(0) + " " + (H - mB) + " Z";
+  let dots = "", peak = days.reduce((p, d) => d.g > p.g ? d : p, days[0]);
+  days.forEach((d, i) => {
+    if (!d.g) return;
+    const dt = new Date(d.k + "T12:00Z").toLocaleDateString(undefined, {month:"short", day:"numeric"});
+    dots += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(d.g).toFixed(1) + '" r="3.4" fill="#1D5B99" data-tip="<b>' + dt + '</b><br>' + d.g + ' goals" onmousemove="showTip(event, this.dataset.tip)" onmouseleave="hideTip()"/>';
+  });
+  const pi = days.indexOf(peak);
+  const peakLbl = new Date(peak.k + "T12:00Z").toLocaleDateString(undefined, {month:"short", day:"numeric"});
+  const gridY = [...Array(Math.floor(maxG / 5) + 1)].map((_, i) => i * 5).filter(v => v > 0);
+  document.getElementById("goalChart").innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '">' + bands +
+    gridY.map(v => '<line x1="' + mL + '" y1="' + Y(v) + '" x2="' + (W - 12) + '" y2="' + Y(v) + '" stroke="#EDF3FA"/><text x="' + (mL - 6) + '" y="' + (Y(v) + 3) + '" text-anchor="end" font-size="9.5" fill="#8AA0B5">' + v + '</text>').join("") +
+    '<path d="' + area + '" fill="url(#pulsegrad)"/>' +
+    '<defs><linearGradient id="pulsegrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#75AADB" stop-opacity=".55"/><stop offset="1" stop-color="#75AADB" stop-opacity=".05"/></linearGradient></defs>' +
+    '<path d="' + line + '" fill="none" stroke="#1D5B99" stroke-width="2.5"/>' + dots +
+    '<text x="' + X(pi).toFixed(1) + '" y="' + (Y(peak.g) - 10).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#1D5B99">▲ ' + peak.g + ' goals · ' + peakLbl + '</text>' +
+    '</svg>' +
+    '<div style="font-size:12px;color:#63788d;margin-top:6px">' +
+    ["GROUP_STAGE","LAST_32","LAST_16","QUARTER_FINALS","SEMI_FINALS"].map(st => {
+      const s = ms.filter(m => m[2] === st); const g = s.reduce((x,m) => x + m[6] + m[7], 0);
+      return '<b style="color:' + STAGE_TINT[st] + '">' + g + '</b> ' + STAGE_LABEL[st].toLowerCase() + (st === "GROUP_STAGE" ? "s" : "");
+    }).join(" · ") +
+    (confFilter !== "ALL" ? ' — matches involving ' + confFilter + ' teams' : '') + '</div>';
+}
+
+/* ================= KNOCKOUTS ================= */
+function renderStages(){
+  const KO = ["LAST_32","LAST_16","QUARTER_FINALS","SEMI_FINALS","THIRD_PLACE","FINAL"];
+  document.getElementById("stages").innerHTML = KO.map(st => {
+    let ms = M.filter(m => m[2] === st && (confFilter === "ALL" || CONF[m[4]] === confFilter || CONF[m[5]] === confFilter));
+    if (!ms.length) return "";
+    return '<div class="stage-col"><h3>' + STAGE_LABEL[st] + '</h3>' + ms.map(m => {
+      const hw = m[11] === "HOME_TEAM", aw = m[11] === "AWAY_TEAM";
+      const score = m[1] === "FINISHED" ? scoreStr(m) : localDate(m[0]);
+      return '<div class="kline">' +
+        '<span><span class="' + (hw ? "w" : "") + '">' + fl(m[4]) + ' ' + m[4] + '</span> · <span class="' + (aw ? "w" : "") + '">' + fl(m[5]) + ' ' + m[5] + '</span></span>' +
+        '<span class="' + (m[1] === "FINISHED" ? "w" : "") + '" style="white-space:nowrap">' + score + '</span></div>';
+    }).join("") + '</div>';
+  }).join("");
+}
+
+/* ================= GROUPS ================= */
+function renderGroups(){
+  document.getElementById("groups").innerHTML = DATA.standings
+    .filter(g => confFilter === "ALL" || g.t.some(r => CONF[r[1]] === confFilter))
+    .map(g =>
+      '<div class="gcard"><h3>Group ' + g.g + '</h3>' +
+      '<table><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>' +
+      g.t.map((r, i) => '<tr class="' + (i < 2 ? "q" : "") + '"><td class="t">' + fl(r[1]) + ' ' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td><td>' + r[4] + '</td><td>' + r[5] + '</td><td>' + (r[6]-r[7]) + '</td><td><b>' + r[8] + '</b></td></tr>').join("") +
+      '</table></div>'
+    ).join("");
+}
+
+/* ================= GOLDEN BOOT (pictograph) ================= */
+function renderGoldenBoot(){
+  const all = DATA.scorers.slice().sort((a,b) => b[2] - a[2] || (b[3]||0) - (a[3]||0));
+  const CAP = 8;
+  const list = EXP.gboot ? all.slice(0, 15) : all.slice(0, CAP);
+  const el = document.getElementById("goldenBoot");
+  if (!el) return;
+  el.innerHTML = list.map((s, i) => {
+    const goals = s[2], pk = s[4] || 0, open = goals - pk, ast = s[3] || 0;
+    let balls = "";
+    for (let k = 0; k < open; k++) balls += '<span class="gb-ball" style="animation-delay:' + (i * 40 + k * 25) + 'ms"></span>';
+    for (let k = 0; k < pk; k++) balls += '<span class="gb-ball pen" style="animation-delay:' + (i * 40 + (open + k) * 25) + 'ms"></span>';
+    return '<div class="gb-row">' +
+      '<div class="gb-name"><span class="r">' + (i + 1) + '</span>' + crest(s[1]) + ' ' + s[0] + '</div>' +
+      '<div class="gb-balls">' + balls + '</div>' +
+      '<div class="gb-meta"><b>' + goals + '</b> goals' + (ast ? ' · ' + ast + ' a' : '') + (pk ? ' · ' + pk + ' pen' : '') + '</div>' +
+    '</div>';
+  }).join("") +
+  '<div class="morewrap"><button class="more" onclick="toggleExp(\'gboot\', renderGoldenBoot)">' + (EXP.gboot ? '▴ Top 8 only' : '▾ Show top 15') + '</button></div>';
+}
+function toggleClamp(id){
+  EXP[id] = !EXP[id];
+  applyClamps();
+}
+function applyClamps(){
+  [["stages","matches"],["groups","groups"]].forEach(x => {
+    const c = document.getElementById(x[0]), b = document.getElementById(x[0] + "More");
+    if (!c || !b) return;
+    c.classList.toggle("clamp", !EXP[x[0]]);
+    b.textContent = EXP[x[0]] ? "▴ Collapse " + x[1] : "▾ Show all " + x[1];
+  });
+}
+
+/* ================= ARGENTINA PAGE ================= */
+const finalMatch = M.find(m => m[2] === "FINAL");
+const argAlive = finalMatch && (finalMatch[4] === ARG || finalMatch[5] === ARG) && finalMatch[1] !== "FINISHED";
+document.getElementById("heroBadge").textContent = argAlive ? "⭐ Argentina are in the Final" : "🇦🇷 Argentina tracker";
+if (finalMatch){
+  document.getElementById("finalCard").innerHTML =
+    '<div class="fc-teams">' +
+      '<div><img class="crest-lg" src="' + crestURL(finalMatch[4]) + '" alt="" onerror="this.remove()"><div class="tname">' + fl(finalMatch[4]) + ' ' + finalMatch[4] + '</div></div>' +
+      '<div class="fc-vs">FINAL<br>VS</div>' +
+      '<div><img class="crest-lg" src="' + crestURL(finalMatch[5]) + '" alt="" onerror="this.remove()"><div class="tname">' + fl(finalMatch[5]) + ' ' + finalMatch[5] + '</div></div>' +
+    '</div>' +
+    '<div class="fc-meta">🏟️ MetLife Stadium, New York/New Jersey<br>🗓️ ' + localDate(finalMatch[0]) + ' (your local time)</div>' +
+    '<div class="countdown" id="cd"></div>';
+  const target = new Date(finalMatch[0] + ":00Z").getTime();
+  (function tick(){
+    let ms = target - Date.now();
+    const cd = document.getElementById("cd");
+    if (!cd) return;
+    if (ms <= 0){ cd.innerHTML = '<div class="cd-box"><b>⚽</b><span>Kick-off!</span></div>'; return; }
+    const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/36e5), mi = Math.floor(ms%36e5/6e4), s = Math.floor(ms%6e4/1e3);
+    cd.innerHTML = [[d,"days"],[h,"hrs"],[mi,"min"],[s,"sec"]].map(x => '<div class="cd-box"><b>' + x[0] + '</b><span>' + x[1] + '</span></div>').join("");
+    setTimeout(tick, 1000);
+  })();
+}
+const at = TEAMS[ARG];
+const messi = DATA.scorers.find(s => s[0] === "Lionel Messi") || [null,null,0,0];
+document.getElementById("chips").innerHTML = [
+  [at.p, "Matches played"], [at.w + "–" + at.d + "–" + at.l, "W · D · L"],
+  [at.gf, "Goals scored"], [at.ga, "Goals conceded"],
+  [messi[2], "Messi goals"], [messi[3] || 0, "Messi assists"]
+].map(c => '<div class="chip"><div class="v">' + c[0] + '</div><div class="k">' + c[1] + '</div></div>').join("") +
+(function(){
+  const inv = (messi[2] || 0) + (messi[3] || 0), pct = Math.round(inv / (at.gf || 1) * 100);
+  return '<div class="chip span2" style="display:flex;align-items:center;gap:10px">' +
+    '<svg width="46" height="46" viewBox="0 0 46 46" style="flex:none">' +
+    '<circle cx="23" cy="23" r="18" fill="none" stroke="#EDF3FA" stroke-width="7"/>' +
+    '<circle cx="23" cy="23" r="18" fill="none" stroke="#4A8CC7" stroke-width="7" stroke-linecap="round" stroke-dasharray="' + (pct / 100 * 113.1).toFixed(1) + ' 113.1" transform="rotate(-90 23 23)"/></svg>' +
+    '<div><div class="v" style="font-size:18px">' + pct + '%</div><div class="k">of goals have Messi\'s hand (' + inv + ' of ' + at.gf + ')</div></div></div>';
+})();
+
+/* Road to the Final: subway-style journey map */
+(function renderJourney(){
+  const ms = M.filter(m => m[4] === ARG || m[5] === ARG);
+  const n = ms.length, W = 780, H = 205;
+  const X = i => 58 + i * (W - 116) / (n - 1);
+  const Yn = i => i % 2 ? 128 : 72;
+  let path = "", nodes = "";
+  ms.forEach((m, i) => {
+    const done = m[1] === "FINISHED";
+    const home = m[4] === ARG;
+    const won = (home && m[11] === "HOME_TEAM") || (!home && m[11] === "AWAY_TEAM");
+    const opp = home ? m[5] : m[4];
+    const ag = home ? m[6] : m[7], og = home ? m[7] : m[6];
+    const ring = done ? (won ? "#1E9E5A" : "#D64545") : "#F5C518";
+    const x = X(i), y = Yn(i);
+    if (i > 0){
+      const px = X(i - 1), py = Yn(i - 1), mx = (px + x) / 2;
+      path += '<path d="M' + px + ' ' + py + ' C' + mx + ' ' + py + ' ' + mx + ' ' + y + ' ' + x + ' ' + y + '" fill="none" stroke="' + (done ? "#75AADB" : "#F5C518") + '" stroke-width="3.5"' + (done ? '' : ' stroke-dasharray="7 6"') + ' stroke-linecap="round"/>';
+    }
+    const scoreTxt = done ? ag + "–" + og + (m[8] === "EXTRA_TIME" ? " aet" : "") : "JUL 19";
+    const above = y === 72;
+    const tip = "<b>" + esc(STAGE_LABEL[m[2]] + (m[3] ? " " + m[3] : "")) + "</b><br>" + esc(mLabel(m).split(": ")[1]) + "<br>" + esc(localDate(m[0]));
+    nodes += '<g data-tip="' + esc(tip) + '" onmousemove="showTip(event, this.dataset.tip)" onmouseleave="hideTip()" style="cursor:default">' +
+      '<circle cx="' + x + '" cy="' + y + '" r="25" fill="#fff" stroke="' + ring + '" stroke-width="3.5"' + (done ? '' : ' stroke-dasharray="5 4"') + '/>' +
+      (crestURL(opp) ? '<image href="' + crestURL(opp) + '" x="' + (x - 15) + '" y="' + (y - 15) + '" width="30" height="30" onerror="this.remove()"/>' : '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" font-size="16">' + fl(opp) + '</text>') +
+      '<text x="' + x + '" y="' + (above ? y - 36 : y + 46) + '" text-anchor="middle" font-size="9.5" font-weight="800" fill="#63788d">' + esc(STAGE_LABEL[m[2]].toUpperCase().replace("ROUND OF ", "R")) + (m[3] ? " " + m[3] : "") + '</text>' +
+      '<text x="' + x + '" y="' + (above ? y + 45 : y - 35) + '" text-anchor="middle" font-size="13" font-weight="800" fill="' + ring + '">' + scoreTxt + '</text>' +
+      '<text x="' + x + '" y="' + (above ? y + 60 : y - 50) + '" text-anchor="middle" font-size="9.5" fill="#8AA0B5">' + esc(shortN(opp)) + '</text></g>';
+  });
+  document.getElementById("timeline").innerHTML =
+    '<div class="panel" style="padding:16px 10px 8px"><svg viewBox="0 0 ' + W + ' ' + H + '">' + path + nodes + '</svg>' +
+    '<div style="font-size:11.5px;color:#63788d;text-align:center;padding-bottom:6px">🟢 won · 🟡 upcoming — hover a badge for details · scores shown Argentina-first</div></div>';
+})();
+
+/* ================= NAV + INIT ================= */
+function showPage(p){
+  [["overview","tabOverview"],["details","tabDetails"],["h2h","tabH2h"],["argentina","tabArgentina"]].forEach(x => {
+    document.getElementById("page-" + x[0]).classList.toggle("active", p === x[0]);
+    document.getElementById(x[1]).classList.toggle("active", p === x[0]);
+  });
+}
+renderConfCards(); renderPills(); renderTeams(); fillSelects(); renderCompare(); renderGoalChart(); renderStages(); renderGroups(); renderGoldenBoot(); applyClamps();
+</script>
+<script>
+/* ==================== STATS LAB (data: FBref) ==================== */
+const FBCSV = `#SQUADS
+Algeria;4;5;3;0;0;3;0;44;15;29;40;4
+Argentina;7;18;12;1;3;9;0;112;44;88;79;21
+Australia;4;2;1;0;0;5;0;42;12;46;38;1
+Austria;4;5;4;1;1;5;0;32;8;47;28;11
+Belgium;6;13;10;1;1;6;1;112;34;78;68;8
+Bosnia–Herz;4;4;3;0;0;7;1;37;14;60;38;2
+Brazil;5;10;8;1;2;8;0;74;30;51;53;11
+Cabo Verde;4;4;2;0;0;5;0;49;12;27;47;7
+Canada;5;8;3;0;0;11;0;80;31;72;73;7
+Colombia;5;5;5;0;0;8;0;94;30;70;64;19
+Congo DR;4;5;3;1;1;6;0;41;9;44;45;9
+Côte d'Ivoire;4;5;4;0;0;4;0;45;14;29;36;4
+Croatia;4;6;5;0;0;4;0;37;17;45;47;8
+Curaçao;3;1;0;0;0;7;0;29;7;32;31;5
+Czechia;3;2;2;0;0;1;0;34;8;37;31;5
+Ecuador;4;2;2;0;0;8;1;53;20;49;38;2
+Egypt;5;8;8;0;0;12;0;67;18;59;67;4
+England;7;14;11;2;2;8;1;99;42;73;102;12
+France;7;16;14;1;2;6;0;120;50;70;65;11
+Germany;4;11;10;1;1;3;0;74;28;51;42;4
+Ghana;4;2;1;0;0;6;0;24;4;56;47;8
+Haiti;3;1;1;0;0;7;0;31;7;55;44;7
+IR Iran;3;3;1;0;1;6;0;37;11;35;23;9
+Iraq;3;1;1;0;0;4;1;21;2;27;31;1
+Japan;4;8;7;0;0;4;0;34;13;55;30;4
+Jordan;3;3;3;0;0;4;0;24;9;31;21;3
+Korea Republic;3;2;2;0;0;4;0;32;11;25;31;8
+Mexico;5;10;7;1;1;4;1;70;21;58;47;5
+Morocco;6;10;9;0;0;7;0;69;26;74;90;9
+Netherlands;4;10;10;0;0;3;0;46;22;44;43;8
+New Zealand;3;4;3;0;0;4;0;31;15;32;24;4
+Norway;6;12;10;0;1;3;0;66;29;58;41;5
+Panama;3;0;0;0;0;5;0;32;7;46;33;6
+Paraguay;5;3;3;0;0;9;1;35;8;66;60;5
+Portugal;5;7;4;1;1;7;0;62;17;44;60;10
+Qatar;3;2;2;0;0;4;2;18;7;36;28;4
+Saudi Arabia;3;1;0;0;0;6;0;17;7;29;26;3
+Scotland;3;1;0;0;0;5;0;29;7;42;39;2
+Senegal;4;10;9;0;0;3;0;69;23;36;48;10
+South Africa;4;2;1;1;1;5;2;39;11;38;46;8
+Spain;7;12;9;1;1;6;0;120;42;80;66;17
+Sweden;4;7;6;0;0;5;0;48;23;43;49;9
+Switzerland;6;10;6;2;2;8;1;74;30;87;89;13
+Tunisia;3;2;2;0;0;1;0;18;6;27;32;9
+Türkiye;3;3;3;0;0;2;0;71;16;31;38;7
+United States;5;9;4;0;0;7;1;59;19;56;66;11
+Uruguay;3;3;1;0;0;5;1;49;13;31;29;14
+Uzbekistan;3;2;1;0;0;4;0;18;5;45;29;3
+#PLAYERS
+Thelo Aasgaard;Norway;MF;1;90;1;0;0;0;0;0;2;1;0;3;0
+Ali Abdi;Tunisia;DF;3;269;0;0;0;0;0;0;1;0;4;1;0
+Saud Abdulhamid;Saudi Arabia;DF;3;269;0;0;0;0;1;0;2;0;4;2;0
+Abdulla Abdullaev;Uzbekistan;DF;2;180;0;0;0;0;0;0;0;0;5;1;0
+Husam Abu Dahab;Jordan;DF;2;178;0;0;0;0;1;0;0;0;2;1;0
+Mohannad Abu Taha;Jordan;DF;3;264;0;0;0;0;1;0;1;0;2;1;0
+Yazeed Abulaila;Jordan;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Mahmoud Abunada;Qatar;GK;3;270;0;0;0;0;1;0;0;0;1;1;0
+Tyler Adams;United States;MF;4;341;0;0;0;0;1;0;0;0;5;6;0
+Ricardo Adé;Haiti;DF;3;270;0;0;0;0;0;0;4;1;6;4;0
+Jonas Adjetey;Ghana;DF;3;225;0;0;0;0;0;0;2;1;1;0;0
+Akram Afif;Qatar;FW,MF;3;238;0;0;0;0;0;0;2;0;0;4;2
+Emmanuel Agbadou;Côte d'Ivoire;DF;3;270;0;0;0;0;0;0;3;1;0;0;0
+Ali Ahmed;Canada;MF;4;234;0;0;0;0;0;0;2;1;1;5;0
+Homam Ahmed;Qatar;DF;2;122;0;1;0;0;0;1;1;0;4;0;0
+Rayan Aït-Nouri;Algeria;DF;4;284;0;0;0;0;0;0;1;0;6;4;0
+Kristoffer Ajer;Norway;DF;5;480;0;0;0;0;1;0;2;1;2;1;0
+Manuel Akanji;Switzerland;DF;6;600;0;0;0;0;0;0;1;1;4;4;0
+Yunus Akgün;Türkiye;MF;2;88;0;0;0;0;1;0;0;0;2;1;0
+David Alaba;Austria;DF;4;275;0;1;0;0;0;0;2;0;2;0;0
+Kerim Alajbegović;Bosnia–Herz;MF;4;277;1;0;0;0;0;0;4;1;4;6;1
+Jordy Alcivar;Ecuador;MF;1;45;0;0;0;0;1;0;1;0;1;0;0
+Omar Alderete;Paraguay;DF;4;320;0;0;0;0;0;0;1;0;2;3;0
+Alisson;Brazil;GK;5;450;0;0;0;0;0;0;0;0;0;0;0
+Thiago Almada;Argentina;MF;5;241;0;0;0;0;1;0;5;2;2;2;2
+Miguel Almirón;Paraguay;MF,FW;4;282;0;0;0;0;1;1;4;0;2;7;0
+Júnior Alonso;Paraguay;DF;5;390;0;0;0;0;1;0;3;1;3;3;1
+Barış Alper Yılmaz;Türkiye;MF,FW;3;179;1;1;0;0;0;0;2;1;4;1;2
+Roberto Alvarado;Mexico;FW,MF;5;428;0;3;0;0;0;0;5;0;3;5;1
+Edson Álvarez;Mexico;MF,DF;4;240;0;0;0;0;1;0;2;0;5;2;0
+Julián Álvarez;Argentina;FW;7;501;1;0;0;0;0;0;11;5;8;3;2
+Michael Amir Murillo;Panama;DF,MF;3;270;0;0;0;0;0;0;5;1;1;7;1
+Amir Al Ammari;Iraq;MF;3;247;0;1;0;0;2;0;0;0;3;0;0
+Abdulelah Al-Amri;Saudi Arabia;DF;3;239;1;0;0;0;1;0;4;2;1;0;0
+Elliot Anderson;England;MF;7;620;0;1;0;0;1;0;7;1;9;13;0
+Andrés Andrade Cedeño;Panama;DF;3;270;0;0;0;0;1;0;0;0;4;0;0
+Nilson Angulo;Ecuador;MF;4;218;1;0;0;0;0;0;2;2;4;3;0
+Oswin Appollis;South Africa;MF,FW;4;255;0;0;0;0;0;0;4;1;1;2;0
+Yazan Al-Arab;Jordan;DF;3;270;0;0;0;0;1;0;0;0;4;0;0
+Maxi Araújo;Uruguay;FW,MF;3;250;2;1;0;0;0;0;4;3;2;7;6
+Tomás Araújo;Portugal;DF;1;90;0;0;0;0;1;0;0;0;1;0;0
+Álex Arce;Paraguay;FW;2;53;0;0;0;0;1;0;0;0;1;0;0
+Carlens Arcus;Haiti;MF,DF;3;146;0;0;0;0;1;0;0;0;5;3;2
+Jhon Arias;Colombia;MF;5;377;1;0;0;0;1;0;9;4;5;2;0
+Marko Arnautović;Austria;FW;4;144;2;0;1;1;1;0;3;3;3;1;5
+Benjamin Asare;Ghana;GK;3;225;0;0;0;0;0;0;0;0;0;1;0
+Emam Ashour;Egypt;MF;5;362;2;0;0;0;0;0;10;2;2;13;0
+Rustam Ashurmatov;Uzbekistan;DF;3;256;0;0;0;0;0;0;0;0;1;0;0
+Marwan Attia;Egypt;MF;5;434;0;1;0;0;2;0;4;0;8;1;0
+Fredrik Aursnes;Norway;MF,DF;6;304;0;0;0;0;0;0;2;0;5;3;0
+Yasin Ayari;Sweden;MF;4;339;2;0;0;0;1;0;7;3;4;8;0
+Jordan Ayew;Ghana;FW;4;300;0;0;0;0;0;0;0;0;7;7;1
+Kaan Ayhan;Türkiye;DF,MF;1;3;1;0;0;0;0;0;1;1;0;0;0
+Neil El Aynaoui;Morocco;MF;6;562;0;0;0;0;0;0;7;2;15;7;0
+Juninho Bacuna;Curaçao;MF;3;254;0;0;0;0;2;0;5;1;6;3;0
+Leandro Bacuna;Curaçao;MF;3;270;0;0;0;0;1;0;6;1;3;3;0
+Álex Baena;Spain;MF,FW;6;407;1;1;0;0;1;0;11;4;9;6;2
+Esmir Bajraktarevic;Bosnia–Herz;MF;4;230;0;0;0;0;0;0;3;2;1;2;0
+Cédric Bakambu;Congo DR;FW;3;190;0;0;0;0;0;0;3;0;2;1;4
+Folarin Balogun;United States;FW;4;312;3;0;0;0;1;1;14;5;3;8;3
+Yoel Bárcenas;Panama;MF;3;249;0;0;0;0;1;0;2;0;3;3;0
+Bradley Barcola;France;MF;7;339;2;1;0;0;1;0;8;4;3;1;1
+Abdülkerim Bardakcı;Türkiye;DF;3;265;0;0;0;0;0;0;3;1;1;3;0
+Martin Baturina;Croatia;MF,FW;4;321;1;0;0;0;0;0;3;1;1;14;0
+Ibrahim Bayesh;Iraq;MF,FW;3;235;0;0;0;0;0;0;1;0;3;5;0
+Patrick Beach;Australia;GK;4;388;0;0;0;0;0;0;0;0;0;0;0
+Aziz Behich;Australia;MF;3;217;0;0;0;0;0;0;1;1;1;4;0
+Alireza Beiranvand;IR Iran;GK;3;270;0;0;0;0;0;0;0;0;0;1;0
+Rafik Belghali;Algeria;DF;4;331;1;0;0;0;0;0;3;1;4;2;0
+Joe Bell;New Zealand;MF;3;243;0;0;0;0;0;0;1;0;3;0;0
+Jean-Ricner Bellegarde;Haiti;MF;3;260;0;0;0;0;1;0;6;0;4;5;0
+Jude Bellingham;England;MF;7;602;6;1;0;0;1;0;17;11;9;16;1
+Anis Ben Slimane;Tunisia;MF,FW;3;240;0;0;0;0;0;0;1;1;0;0;2
+Nadhir Benbouali;Algeria;FW;1;45;1;0;0;0;0;0;2;2;0;0;0
+Ramy Bensebaini;Algeria;DF;4;360;0;0;0;0;0;0;2;0;1;5;0
+Nabil Bentaleb;Algeria;MF;4;285;0;0;0;0;0;0;1;0;2;3;0
+Rodrigo Bentancur;Uruguay;MF;3;270;0;0;0;0;1;0;4;0;7;5;0
+Patrick Berg;Norway;MF;6;445;0;2;0;0;1;0;3;0;4;2;0
+Sander Berge;Norway;MF;5;480;0;0;0;0;0;0;0;0;6;2;0
+Lucas Bergvall;Sweden;MF;4;181;0;1;0;0;1;0;2;0;7;4;0
+Sebastian Berhalter;United States;MF;5;187;1;1;0;0;1;0;3;1;5;6;0
+Alexander Bernhardsson;Sweden;MF;3;217;0;0;0;0;0;0;1;1;2;4;0
+César Blackman;Panama;MF,DF;2;178;0;0;0;0;1;0;2;1;2;2;1
+Damián Bobadilla;Paraguay;MF;4;189;0;0;0;0;0;0;0;0;1;1;0
+Oscar Bobb;Norway;FW;6;225;0;0;0;0;0;0;4;2;1;4;0
+Moïse Bombito;Canada;DF;3;193;0;0;0;0;0;0;1;1;2;0;0
+Ange-Yoan Bonny;Côte d'Ivoire;FW;4;234;0;0;0;0;0;0;1;1;1;3;1
+Jordy Bos;Australia;MF,DF;4;308;0;0;0;0;1;0;5;2;4;4;0
+Ayyoub Bouaddi;Morocco;MF;5;381;0;0;0;0;0;0;3;0;3;6;0
+Hicham Boudaoui;Algeria;MF;3;128;0;0;0;0;1;0;0;0;4;1;0
+Yassine Bounou;Morocco;GK;6;570;0;0;0;0;0;0;0;0;0;4;0
+Michael Boxall;New Zealand;DF;3;207;0;0;0;0;0;0;0;0;2;2;0
+Brian Brobbey;Netherlands;FW;4;223;3;0;0;0;0;0;4;3;4;3;2
+Nathaniel Brown;Germany;DF;3;282;1;1;0;0;0;0;3;2;4;1;0
+Tajon Buchanan;Canada;MF;5;376;0;0;0;0;0;0;6;3;5;8;2
+Ante Budimir;Croatia;FW;3;155;1;0;0;0;0;0;3;1;6;4;0
+Firas Al-Buraikan;Saudi Arabia;FW;3;238;0;0;0;0;1;0;0;0;2;3;0
+Liberato Cacace;New Zealand;DF;3;220;0;0;0;0;0;0;1;1;1;5;0
+Juan Cáceres;Paraguay;DF;5;436;0;0;0;0;1;0;2;1;9;6;0
+Sebastián Cáceres;Uruguay;DF;3;270;0;0;0;0;0;0;3;0;2;2;0
+Moisés Caicedo;Ecuador;MF;4;360;0;0;0;0;1;0;4;1;5;4;0
+Uğurcan Çakır;Türkiye;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Hakan Çalhanoğlu;Türkiye;MF;2;180;0;0;0;0;0;0;11;2;2;1;0
+Lamine Camara;Senegal;MF;4;248;0;1;0;0;1;0;3;0;5;3;0
+Jaminton Campaz;Colombia;FW,MF;3;75;1;0;0;0;0;0;6;3;2;3;2
+João Cancelo;Portugal;DF;5;312;0;1;0;0;0;0;3;0;6;2;1
+Agustín Canobbio;Uruguay;FW;3;224;1;0;0;0;0;1;4;1;7;5;1
+Casemiro;Brazil;MF;5;379;1;0;0;0;2;0;4;2;6;6;0
+Josué Casimir;Haiti;MF;3;182;0;0;0;0;1;0;1;0;4;4;0
+Timothy Castagne;Belgium;DF;6;478;0;1;0;0;1;0;3;1;7;2;0
+Fares Chaïbi;Algeria;MF;4;360;0;0;0;0;1;0;9;3;3;2;1
+Mateo Chávez;Mexico;DF;1;77;1;0;0;0;0;0;1;1;1;1;0
+Tahith Chong;Curaçao;MF;3;247;0;0;0;0;0;0;4;2;3;13;0
+Ryan Christie;Scotland;MF;3;95;0;0;0;0;1;0;2;0;2;1;0
+Brian Cipenga;Congo DR;MF,FW;2;146;1;0;0;0;0;0;6;1;2;1;1
+Alessandro Circati;Australia;DF;4;390;0;0;0;0;1;0;3;0;5;4;0
+Pathé Ciss;Senegal;DF;4;184;0;0;0;0;0;0;2;1;1;0;0
+Livano Comenencia;Curaçao;MF;3;233;1;0;0;0;1;0;5;2;4;1;0
+José Córdoba;Panama;DF;3;270;0;0;0;0;0;0;0;0;5;1;0
+Derek Cornelius;Canada;DF;4;315;0;0;0;0;1;0;5;1;4;3;0
+Diogo Costa;Portugal;GK;5;450;0;0;0;0;0;0;0;0;0;1;0
+Vladimír Coufal;Czechia;MF,DF;3;270;0;1;0;0;0;0;1;0;4;3;1
+Thibaut Courtois;Belgium;GK;6;550;0;0;0;0;0;0;0;0;0;0;0
+Maxime Crépeau;Canada;GK;5;450;0;0;0;0;0;0;0;0;1;1;0
+Max Crocombe;New Zealand;GK;3;270;0;0;0;0;0;0;0;0;0;1;0
+Pau Cubarsí;Spain;DF;7;630;0;0;0;0;1;0;3;1;4;2;0
+Andrés Cubas;Paraguay;MF;5;480;0;0;0;0;1;0;1;0;14;3;0
+Marc Cucurella;Spain;DF;7;630;0;2;0;0;1;0;4;3;7;3;3
+Matheus Cunha;Brazil;FW;5;290;3;0;0;0;0;0;11;5;1;3;1
+Findlay Curtis;Scotland;MF;2;9;0;0;0;0;1;0;0;0;1;0;0
+Aymen Dahmen;Tunisia;GK;2;180;0;0;0;0;0;0;0;0;0;1;0
+Danilo;Brazil;DF;5;405;0;0;0;0;2;0;1;0;7;1;1
+Kevin Danso;Austria;DF;4;241;0;0;0;0;0;0;1;0;1;2;0
+Jonathan David;Canada;FW;5;420;3;0;0;0;1;0;18;8;5;5;0
+Promise David;Canada;FW;4;80;1;1;0;0;0;0;5;3;4;2;0
+Nasser Al-Dawsari;Saudi Arabia;MF;3;207;0;0;0;0;1;0;1;0;7;2;0
+Salem Al-Dawsari;Saudi Arabia;MF;3;245;0;0;0;0;1;0;3;0;3;4;1
+Kevin De Bruyne;Belgium;MF;5;382;1;0;0;0;1;0;20;5;2;4;0
+Maxim De Cuyper;Belgium;DF;6;442;0;0;0;0;1;0;10;6;7;2;0
+Luc De Fougerolles;Canada;DF;5;372;0;0;0;0;2;0;3;1;8;8;0
+Charles De Ketelaere;Belgium;FW,MF;5;350;3;1;0;0;0;0;6;5;2;3;2
+Nicolás De La Cruz;Uruguay;MF;3;86;0;0;0;0;1;0;4;2;2;3;0
+Rodrigo De Paul;Argentina;MF;6;422;0;1;0;0;1;0;2;1;2;4;1
+Amar Dedić;Bosnia–Herz;DF;3;270;0;0;0;0;1;0;2;1;6;3;0
+Hannes Delcroix;Haiti;DF;3;270;0;0;0;0;0;0;0;0;1;2;0
+Ousmane Dembélé;France;MF;7;547;5;2;0;0;0;0;18;8;0;3;2
+Merih Demiral;Türkiye;DF;2;180;0;0;0;0;0;0;6;2;2;1;3
+Ermedin Demirović;Bosnia–Herz;FW;4;354;0;0;0;0;1;0;4;4;11;3;1
+Sergiño Dest;United States;MF;5;297;0;0;0;0;0;0;3;1;2;4;0
+Amad Diallo;Côte d'Ivoire;MF,FW;4;185;2;0;0;0;0;0;8;4;0;2;1
+Habib Diarra;Senegal;MF;3;143;2;0;0;0;0;0;4;2;2;2;0
+Rúben Dias;Portugal;DF;4;360;0;0;0;0;1;0;0;0;6;3;0
+Krépin Diatta;Senegal;DF;4;390;0;0;0;0;0;0;1;0;4;6;0
+Mory Diaw;Senegal;GK;3;238;0;0;0;0;0;0;0;0;0;2;0
+Brahim Díaz;Morocco;MF;6;457;0;4;0;0;0;0;6;1;3;10;0
+Luis Díaz;Colombia;FW,MF;5;478;1;1;0;0;0;0;19;6;7;9;9
+Lucas Digne;France;DF;5;418;0;0;0;0;0;0;2;1;5;2;0
+Diney;Cabo Verde;DF;4;390;0;0;0;0;1;0;4;2;2;0;0
+Yan Diomandé;Côte d'Ivoire;MF,FW;4;329;0;1;0;0;0;0;4;0;2;7;0
+Issa Diop;Morocco;DF;5;476;1;0;0;0;3;0;1;1;4;1;0
+Ritsu Doan;Japan;MF;4;278;0;1;0;0;0;0;1;0;6;4;0
+Jeremy Doku;Belgium;MF;5;309;0;0;0;0;0;0;3;1;4;18;0
+Merchas Doski;Iraq;DF;3;270;0;0;0;0;1;0;1;0;3;8;0
+Désiré Doué;France;MF;7;355;1;1;0;0;0;0;13;8;3;6;0
+Guéla Doué;Côte d'Ivoire;DF;4;277;0;0;0;0;1;0;1;0;6;5;0
+Deroy Duarte;Cabo Verde;MF;4;264;1;0;0;0;0;0;3;2;4;1;0
+Denzel Dumfries;Netherlands;DF,MF;4;390;0;2;0;0;0;0;5;2;6;3;1
+Edin Džeko;Bosnia–Herz;FW;3;176;0;0;0;0;1;0;3;0;1;2;0
+Anthony Elanga;Sweden;MF,FW;4;217;2;0;0;0;0;0;3;3;0;7;1
+Eren Elmalı;Türkiye;DF;2;111;0;0;0;0;1;0;0;0;2;1;0
+Nico Elvedi;Switzerland;DF;6;600;0;0;0;0;1;0;3;0;5;6;0
+Breel Embolo;Switzerland;FW;6;501;2;2;1;1;2;1;10;5;9;11;4
+Julio Enciso;Paraguay;FW;5;386;1;2;0;0;0;0;8;1;3;9;0
+Stephen Eustáquio;Canada;MF;5;392;1;0;0;0;0;0;4;1;2;7;0
+Martin Expérience;Haiti;DF,MF;3;270;0;0;0;0;0;0;1;0;7;6;0
+Saeid Ezatolahi;IR Iran;MF;3;264;0;0;0;0;2;0;6;2;7;4;0
+Fabinho;Brazil;DF,MF;3;71;0;0;0;0;1;0;1;0;4;0;0
+José Fajardo;Panama;FW;3;155;0;0;0;0;1;0;1;0;4;3;1
+Abdul Fatawu Issahaku;Ghana;FW,MF;4;132;0;0;0;0;1;0;3;0;1;7;0
+Ahmed Fathy;Qatar;MF;3;150;0;0;0;0;2;0;0;0;2;1;0
+Hamdy Fathy;Egypt;DF,MF;4;238;0;0;0;0;1;0;0;0;3;2;1
+Ahmed Fatouh;Egypt;DF;3;267;0;0;0;0;1;0;1;1;2;3;0
+Abbosbek Fayzullayev;Uzbekistan;MF;3;220;1;0;0;0;0;0;3;2;6;4;0
+João Félix;Portugal;MF;3;201;0;0;0;0;0;0;6;1;3;6;0
+Lewis Ferguson;Scotland;MF;3;270;0;0;0;0;0;0;2;1;5;10;0
+Bruno Fernandes;Portugal;MF;5;422;0;1;0;0;0;0;9;3;2;8;1
+Enzo Fernández;Argentina;MF;6;570;2;0;0;0;0;0;12;4;9;5;1
+Álvaro Fidalgo;Mexico;MF;3;96;1;0;0;0;0;0;3;2;0;2;0
+Sherel Floranus;Curaçao;DF;3;270;0;0;0;0;0;0;2;0;2;0;1
+Seko Fofana;Côte d'Ivoire;MF;2;92;0;0;0;0;1;0;5;1;1;0;0
+Yahia Fofana;Côte d'Ivoire;GK;4;360;0;0;0;0;0;0;0;0;0;3;0
+Deveron Fonville;Curaçao;DF;3;241;0;0;0;0;0;0;0;0;2;3;0
+Alan Franco;Ecuador;DF;4;251;0;0;0;0;2;0;0;0;7;0;0
+Alex Freeman;United States;DF;5;374;1;1;0;0;0;0;4;1;1;1;0
+Matt Freese;United States;GK;4;360;0;0;0;0;0;0;0;0;0;2;0
+Remo Freuler;Switzerland;MF;6;592;0;0;0;0;0;0;2;1;8;3;1
+Juriën Gaari;Curaçao;DF;2;166;0;0;0;0;1;0;2;0;4;1;0
+Jassem Gaber;Qatar;MF;3;149;0;0;0;0;1;0;0;0;7;0;0
+Cody Gakpo;Netherlands;FW;4;368;3;1;0;0;0;0;10;6;3;3;3
+Matías Galarza;Paraguay;MF;4;388;1;1;0;0;2;0;2;1;10;9;0
+Hernán Galíndez;Ecuador;GK;4;360;0;0;0;0;0;0;0;0;0;0;0
+Jesús Gallardo;Mexico;DF;5;373;0;0;0;0;0;0;4;0;7;3;0
+Ben Gannon-Doak;Scotland;MF;3;186;0;0;0;0;0;0;4;0;3;1;0
+Saman Ghoddos;IR Iran;MF;3;208;0;0;0;0;0;0;4;0;3;0;1
+Lee Gi-hyuk;Korea Republic;DF;3;270;0;0;0;0;1;0;0;0;2;1;0
+Orlando Gill;Paraguay;GK;5;480;0;0;0;0;0;0;0;0;0;3;0
+Diego Gómez;Paraguay;MF;4;304;0;0;0;0;2;0;6;0;5;1;0
+Gustavo Gómez;Paraguay;DF;5;480;0;0;0;0;0;0;2;0;3;2;1
+Nicolás González;Argentina;FW,MF;6;214;0;1;0;0;0;0;7;1;4;2;1
+Anthony Gordon;England;MF;6;396;1;3;0;0;0;0;6;4;4;10;0
+Amine Gouiri;Algeria;FW;4;251;1;0;0;0;0;0;3;2;1;1;0
+Ryan Gravenberch;Netherlands;MF;4;345;0;2;0;0;0;0;5;0;5;3;0
+Michael Gregoritsch;Austria;FW;3;188;0;1;0;0;0;0;1;0;1;1;2
+Gabriel Gudmundsson;Sweden;MF,DF;4;330;0;0;0;0;1;0;0;0;5;7;0
+Cho Gue-sung;Korea Republic;FW;2;31;0;0;0;0;1;0;2;1;1;0;0
+Marc Guéhi;England;DF;7;574;0;0;0;0;1;0;1;0;3;12;0
+Idrissa Gueye;Senegal;MF;4;361;0;0;0;0;0;0;5;1;2;2;0
+Pape Gueye;Senegal;MF;4;234;2;1;0;0;1;0;8;3;4;2;0
+Bruno Guimarães;Brazil;MF;5;416;0;4;0;1;0;0;8;2;4;7;0
+Arda Güler;Türkiye;MF;3;270;1;0;0;0;0;0;12;4;3;10;2
+Angus Gunn;Scotland;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Brian Gutiérrez;Mexico;MF;4;198;0;0;0;0;1;0;6;0;5;3;0
+Viktor Gyökeres;Sweden;FW;4;360;1;2;0;0;1;0;12;6;4;7;1
+Erling Haaland;Norway;FW;5;465;7;0;0;0;0;0;20;13;5;3;0
+Ihsan Haddad;Jordan;DF;3;260;0;1;0;0;0;0;1;0;3;1;0
+Ehsan Hajsafi;IR Iran;DF;2;91;0;0;0;0;1;0;1;0;2;1;0
+Achraf Hakimi;Morocco;DF;6;570;1;2;0;0;1;0;14;4;7;16;0
+Redouane Halhal;Morocco;DF;2;180;0;0;0;0;1;0;0;0;3;5;1
+Ali Al Hamadi;Iraq;FW;3;180;0;0;0;0;0;0;6;0;1;5;0
+Mohamed Amine Ben Hamida;Tunisia;DF;3;202;0;0;0;0;0;0;0;0;3;1;0
+Odiljon Hamrobekov;Uzbekistan;MF;2;77;0;0;0;0;1;0;1;0;1;1;0
+Lee Han-beom;Korea Republic;DF;3;270;0;0;0;0;0;0;2;0;7;2;0
+Grant Hanley;Scotland;DF;2;180;0;0;0;0;0;0;0;0;1;0;1
+Mohamed Hany;Egypt;DF;5;480;0;1;0;0;0;0;4;0;2;1;0
+Moteb Al-Harbi;Saudi Arabia;DF;3;188;0;0;0;0;0;0;0;0;0;4;0
+Carlos Harvey;Panama;MF;3;267;0;0;0;0;1;0;5;0;8;3;0
+Akam Hashim;Iraq;DF;3;270;0;0;0;0;0;0;1;0;0;3;0
+Haissem Hassan;Egypt;MF;2;126;0;1;0;0;2;0;1;0;2;2;0
+Kai Havertz;Germany;FW;4;353;3;0;1;1;1;0;12;7;3;4;1
+Hassan Al-Haydos;Qatar;MF;2;57;1;0;0;0;0;0;1;1;1;1;0
+Jan Paul van Hecke;Netherlands;DF;4;390;1;0;0;0;0;0;3;2;4;2;0
+Torbjørn Heggem;Norway;DF;5;443;0;0;0;0;0;0;1;1;2;0;0
+Jordan Henderson;England;MF;1;7;0;0;0;0;1;0;0;0;0;1;0
+Jack Hendry;Scotland;DF;3;270;0;0;0;0;0;0;0;0;1;3;0
+Theo Hernández;France;DF;4;212;0;0;0;0;0;0;3;0;2;4;0
+Lucas Herrington;Australia;DF;2;210;0;0;0;0;0;0;0;0;2;0;0
+Aaron Hickey;Scotland;DF;1;74;0;0;0;0;1;0;0;0;2;4;0
+Isak Hien;Sweden;DF;3;216;0;0;0;0;1;0;0;0;3;3;0
+Piero Hincapié;Ecuador;DF;4;339;0;0;0;0;1;1;3;0;5;4;0
+Robin Hranáč;Czechia;DF;3;270;0;0;0;0;0;0;0;0;6;0;0
+Ayman Hussein;Iraq;FW;2;115;1;0;0;0;0;0;3;1;2;1;0
+Oh Hyeon-gyu;Korea Republic;FW;3;129;1;0;0;0;0;0;4;2;0;1;0
+Roger Ibanez;Brazil;DF;1;45;0;0;0;0;1;0;0;0;2;1;0
+Yasser Ibrahim;Egypt;DF;5;467;1;0;0;0;2;0;1;1;6;3;0
+Hwang In-beom;Korea Republic;MF;3;263;1;1;0;0;0;0;4;2;1;1;0
+Christ Inao Oulaï;Côte d'Ivoire;MF;4;208;0;0;0;0;0;0;2;0;3;5;0
+Zidane Iqbal;Iraq;MF;3;188;0;0;0;0;0;0;0;0;1;2;0
+Nestory Irankunda;Australia;FW,MF;4;261;1;0;0;0;0;0;6;2;4;5;0
+Jackson Irvine;Australia;MF;4;223;0;0;0;0;1;0;3;1;3;3;0
+Alexander Isak;Sweden;FW;4;357;1;3;0;0;0;0;8;6;4;1;5
+Wilson Isidor;Haiti;FW;3;186;1;0;0;0;0;0;5;2;3;2;1
+Jacob Italiano;Australia;DF;2;163;0;0;0;0;1;0;1;0;0;0;0
+Hiroki Ito;Japan;DF;4;360;0;0;0;0;0;0;1;0;7;0;0
+Junya Itō;Japan;MF;4;216;1;0;0;0;0;0;3;1;2;5;0
+Nicolas Jackson;Senegal;FW;4;234;0;1;0;0;0;0;7;3;2;0;5
+Ismail Jakobs;Senegal;DF;3;219;0;0;0;0;0;0;1;0;2;0;0
+Reece James;England;DF;4;311;0;0;0;0;0;0;1;0;3;1;0
+Danley Jean-Jacques;Haiti;MF;3;259;0;0;0;0;1;0;0;0;5;3;0
+Raúl Jiménez;Mexico;FW;4;317;3;0;1;1;0;0;18;7;7;2;2
+Alistair Johnston;Canada;DF;5;450;0;0;0;0;1;0;5;2;5;4;0
+Frenkie de Jong;Netherlands;MF;4;328;0;0;0;0;0;0;1;0;6;6;0
+Edmilson Junior;Qatar;MF,FW;3;210;0;1;0;0;0;0;3;2;4;2;1
+Vinicius Júnior;Brazil;FW;5;440;4;1;0;0;0;0;17;11;4;10;3
+Elijah Just;New Zealand;MF;3;264;3;0;0;0;1;0;7;5;3;2;0
+Saša Kalajdžić;Austria;FW;3;77;1;0;0;0;0;0;4;1;2;2;0
+Daichi Kamada;Japan;MF;4;329;2;0;0;0;1;0;3;2;2;4;1
+Hossein Kanaanizadegan;IR Iran;DF;2;135;0;0;0;0;1;0;1;1;1;0;0
+Harry Kane;England;FW;7;652;6;1;2;2;0;0;23;12;8;9;2
+Lee Kang-in;Korea Republic;FW;3;270;0;1;0;0;1;0;4;1;1;7;0
+Mohamed Kanno;Saudi Arabia;MF;3;225;0;0;0;0;1;0;3;2;5;0;0
+Steve Kapuadi;Congo DR;DF;2;180;0;0;0;0;0;0;1;0;2;0;0
+Gervane Kastaneer;Curaçao;FW,MF;3;30;0;0;0;0;2;0;1;0;2;0;0
+Nikola Katić;Bosnia–Herz;DF;4;317;0;0;0;0;1;0;2;0;4;0;0
+Franck Kessié;Côte d'Ivoire;MF;4;346;1;0;0;0;1;0;4;2;7;2;1
+Abdullah Al-Khaibari;Saudi Arabia;MF;3;180;0;0;0;0;0;0;1;0;0;2;0
+Shoja' Khalilzadeh;IR Iran;DF;3;270;0;0;0;0;1;0;2;0;4;0;1
+Bilal El Khannouss;Morocco;MF,FW;6;461;0;0;0;0;1;0;6;4;5;6;0
+Rani Khedira;Tunisia;MF;3;149;0;0;0;0;1;0;1;0;3;0;0
+Boualem Khoukhi;Qatar;DF;3;270;1;0;0;0;0;0;3;1;2;1;0
+Abdukodir Khusanov;Uzbekistan;DF;3;270;0;0;0;0;2;0;0;0;6;0;0
+Joshua Kimmich;Germany;DF;4;351;0;2;0;0;0;0;5;1;0;7;0
+Gregor Kobel;Switzerland;GK;6;600;0;0;0;0;0;0;0;0;0;3;0
+Sead Kolašinac;Bosnia–Herz;DF;4;337;0;1;0;0;0;0;0;0;6;4;0
+Ghislain Konan;Côte d'Ivoire;DF;3;269;0;0;0;0;0;0;4;0;0;1;0
+Manu Koné;France;MF;5;385;0;0;0;0;1;0;6;2;6;7;0
+Ezri Konsa;England;DF;7;557;0;0;0;0;0;0;2;1;7;11;0
+Odilon Kossounou;Côte d'Ivoire;DF;4;272;0;0;0;0;0;0;0;0;0;1;0
+Jules Koundé;France;DF;7;598;0;0;0;0;0;0;2;0;6;5;1
+Mateo Kovačić;Croatia;MF;4;270;0;1;0;0;0;0;5;4;3;3;0
+Matej Kovar;Czechia;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Ladislav Krejčí;Czechia;DF;3;270;1;0;0;0;1;0;5;1;6;2;0
+Gustaf Lagerbielke;Sweden;DF;4;360;0;0;0;0;0;0;3;1;1;3;1
+Konrad Laimer;Austria;MF,DF;4;360;0;1;0;0;1;0;1;0;6;3;3
+Aymeric Laporte;Spain;DF;7;629;0;1;0;0;1;0;4;1;4;2;0
+Cyle Larin;Canada;FW;4;190;2;0;0;0;2;0;9;4;5;1;3
+Richie Laryea;Canada;DF;5;429;0;0;0;0;1;0;2;1;8;14;1
+Mohanad Lasheen;Egypt;MF;4;359;0;0;0;0;2;0;2;0;5;3;0
+Issa Laye;Qatar;MF,DF;3;270;0;0;0;0;0;0;1;0;0;3;0
+Rafael Leão;Portugal;MF;5;158;1;1;0;0;0;0;4;1;1;2;0
+Jefferson Lerma;Colombia;MF;5;410;0;0;0;0;1;0;5;1;6;5;0
+Philipp Lienhart;Austria;DF;2;180;0;0;0;0;0;0;1;0;0;0;0
+Victor Lindelöf;Sweden;DF,MF;4;356;0;0;0;0;0;0;2;0;3;0;0
+Erik Lira;Mexico;MF;4;345;0;1;0;0;0;0;0;0;3;4;0
+Dominik Livaković;Croatia;GK;4;360;0;0;0;0;0;0;0;0;0;1;0
+Marcos Llorente;Spain;DF;3;187;0;1;0;0;0;0;0;0;2;1;0
+Giovani Lo Celso;Argentina;MF;1;59;1;0;0;0;0;0;1;1;1;1;1
+Jürgen Locadia;Curaçao;FW;3;235;0;0;0;0;0;0;1;0;3;4;2
+Sidny Lopes Cabral;Cabo Verde;DF;3;285;1;0;0;0;2;0;4;2;2;9;0
+Flaco López;Argentina;FW;2;20;0;1;0;0;1;0;1;0;1;0;0
+Derrick Luckassen;Ghana;DF;2;180;1;0;0;0;0;0;1;1;1;2;0
+Jhon Lucumí;Colombia;DF;5;478;0;0;0;0;1;0;2;0;5;0;0
+José Luis Rodríguez;Panama;MF,FW;3;233;0;0;0;0;0;0;3;1;4;2;0
+Romelu Lukaku;Belgium;FW;6;233;3;1;0;0;1;0;6;3;2;0;1
+Jovo Lukić;Bosnia–Herz;FW;2;67;1;0;0;0;1;0;3;2;1;0;0
+Alexis Mac Allister;Argentina;MF;7;630;1;1;0;0;0;0;13;4;6;10;0
+Assim Madibo;Qatar;MF;2;131;0;0;0;0;0;1;0;0;2;1;0
+Noni Madueke;England;MF;5;286;0;0;0;0;0;0;6;1;2;3;1
+Daizen Maeda;Japan;MF;3;244;1;0;0;0;0;0;2;1;2;1;1
+Gabriel Magalhães;Brazil;DF;5;450;0;1;0;0;0;0;1;0;1;3;0
+Ermin Mahmić;Bosnia–Herz;MF;3;68;2;0;0;0;1;0;4;2;1;1;0
+Riyad Mahrez;Algeria;MF;4;262;2;1;0;0;0;0;6;3;1;7;1
+Mike Maignan;France;GK;7;630;0;0;0;0;0;0;0;0;0;2;0
+Evidence Makgopa;South Africa;FW;4;215;0;0;0;0;0;0;4;3;1;1;2
+Donyell Malen;Netherlands;FW;3;185;0;0;0;0;0;0;4;2;0;2;0
+Aïssa Mandi;Algeria;DF;4;360;0;0;0;0;0;0;0;0;0;5;0
+Sadio Mané;Senegal;MF,FW;4;362;0;1;0;0;0;0;6;3;4;10;3
+Juan Manuel Sanabria;Uruguay;DF;3;204;0;0;0;0;1;0;3;0;1;0;1
+Johan Manzambi;Switzerland;MF,FW;4;199;3;2;0;0;0;0;6;3;3;3;1
+Omar Marmoush;Egypt;FW,MF;5;326;0;0;0;0;0;0;11;1;3;8;0
+Marquinhos;Brazil;DF;5;450;0;0;0;0;0;0;2;0;0;2;1
+Gabriel Martinelli;Brazil;MF;4;143;1;0;0;0;0;0;2;1;4;3;0
+Cristian Martínez;Panama;MF,FW;3;242;0;0;0;0;0;0;1;0;5;5;1
+Emiliano Martínez;Argentina;GK;7;690;0;0;0;0;0;0;0;0;0;1;0
+Lautaro Martínez;Argentina;FW;7;310;3;1;1;1;1;0;10;4;8;5;2
+Lisandro Martínez;Argentina;DF;6;581;1;1;0;0;1;0;4;2;6;4;0
+Thapelo Maseko;South Africa;MF,FW;3;242;1;0;0;0;0;0;8;1;4;10;0
+Hazem Mastouri;Tunisia;FW;1;89;1;0;0;0;0;0;3;2;2;2;0
+Arthur Masuaku;Congo DR;DF;4;315;0;1;0;0;0;0;0;0;0;4;0
+Mauricio;Paraguay;MF;4;173;1;0;0;0;0;0;4;3;3;3;0
+Fiston Mayele;Congo DR;FW;2;42;1;0;0;0;0;0;5;1;1;1;1
+Ibrahim Maza;Algeria;MF,FW;4;351;0;0;0;0;0;0;11;3;1;5;0
+Noussair Mazraoui;Morocco;DF;6;477;0;0;0;0;0;0;0;0;4;6;0
+Kylian Mbappé;France;FW;7;605;8;3;1;2;1;0;33;19;6;8;5
+Thalente Mbatha;South Africa;MF;4;260;0;0;0;0;1;0;4;1;4;0;0
+Ibrahim Mbaye;Senegal;MF;4;157;1;0;0;0;0;0;4;1;0;2;0
+Chancel Mbemba;Congo DR;DF;4;360;0;1;0;0;1;0;1;0;1;3;0
+Mbekezeli Mbokazi;South Africa;DF;4;360;0;0;0;0;0;0;4;1;3;5;1
+Nathanaël Mbuku;Congo DR;MF,FW;3;143;0;0;0;0;1;0;3;2;4;8;0
+Callum McCowatt;New Zealand;MF;3;159;0;0;0;0;1;0;4;3;4;1;0
+John McGinn;Scotland;MF;3;259;1;0;0;0;0;0;3;1;2;11;0
+Weston McKennie;United States;MF;5;443;0;0;0;0;1;0;5;1;8;2;0
+Kenny McLean;Scotland;MF;3;118;0;0;0;0;1;0;1;0;1;1;0
+Scott McTominay;Scotland;MF;3;270;0;0;0;0;0;0;8;3;3;0;0
+Brandon Mechele;Belgium;DF;6;570;0;0;0;0;1;0;5;1;9;2;0
+Facundo Medina;Argentina;DF;4;257;0;1;0;0;1;0;0;0;3;2;1
+Hannibal Mejbri;Tunisia;MF;3;270;0;2;0;0;0;0;3;1;4;15;0
+Amar Memić;Bosnia–Herz;MF;4;224;0;0;0;0;0;0;3;1;4;3;0
+Memphis;Netherlands;FW,MF;3;54;0;1;0;0;1;0;0;0;1;1;0
+Nuno Mendes;Portugal;DF;5;395;1;0;0;0;0;0;3;1;3;12;1
+Ryan Mendes;Cabo Verde;FW,MF;4;330;0;1;0;0;0;0;6;0;1;2;2
+Gideon Mensah;Ghana;DF;4;360;0;0;0;0;0;0;0;0;2;3;0
+Mikel Merino;Spain;MF;7;153;2;0;0;0;0;0;4;3;5;5;0
+Lionel Messi;Argentina;FW;7;620;8;4;0;2;0;0;34;18;2;16;5
+Connor Metcalfe;Australia;MF;4;315;1;0;0;0;0;0;5;2;1;0;0
+Thomas Meunier;Belgium;DF;3;190;0;1;0;0;0;0;2;1;9;0;0
+Liam Millar;Canada;MF;3;162;0;0;0;0;1;0;1;0;3;1;0
+Kim Min-jae;Korea Republic;DF;3;245;0;0;0;0;0;0;1;1;2;1;0
+Aubrey Modiba;South Africa;DF;4;346;0;0;0;0;1;0;5;1;4;6;2
+Luka Modrić;Croatia;MF;4;317;0;1;0;0;1;0;1;0;4;3;0
+Milad Mohammadi;IR Iran;DF;3;205;0;0;0;0;0;0;1;1;1;1;2
+Mohammad Mohebi;IR Iran;MF;3;244;1;0;0;0;0;0;2;1;1;1;0
+Johan Mojica;Colombia;DF;4;390;0;0;0;0;1;0;3;2;1;7;1
+Teboho Mokoena;South Africa;MF;3;270;1;0;1;1;2;0;4;2;3;6;0
+Nahuel Molina;Argentina;DF;6;465;0;0;0;0;0;0;1;0;3;0;1
+Jamiro Monteiro;Cabo Verde;MF;4;281;0;0;0;0;0;0;5;1;4;2;0
+César Montes;Mexico;DF;4;314;0;0;0;0;0;1;1;1;4;3;0
+Gonzalo Montiel;Argentina;DF;5;135;0;1;0;0;1;0;1;0;3;0;0
+Gilberto Mora;Mexico;MF;4;213;0;0;0;0;0;0;5;0;3;3;0
+Steven Moreira;Cabo Verde;DF;4;301;0;0;0;0;0;0;2;0;0;2;0
+Orlando Mosquera;Panama;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Samuel Moutoussamy;Congo DR;MF;4;330;0;0;0;0;1;0;3;0;8;1;0
+Akmal Mozgovoy;Uzbekistan;MF;3;216;0;1;0;0;0;0;1;0;0;3;0
+Lionel Mpasi;Congo DR;GK;4;360;0;0;0;0;0;0;0;0;0;0;0
+Khuliso Mudau;South Africa;DF;4;360;0;0;0;0;0;0;0;0;4;10;1
+Tarik Muharemovic;Bosnia–Herz;DF;3;259;0;0;0;0;0;1;1;0;5;2;0
+Miro Muheim;Switzerland;DF,MF;3;87;0;0;0;0;1;0;0;0;1;3;0
+Ngal'Ayel Mukau;Congo DR;MF;4;195;0;0;0;0;0;0;1;0;3;4;1
+Daniel Muñoz;Colombia;DF;5;394;2;0;0;0;0;0;3;2;9;1;3
+Petar Musa;Croatia;FW;2;110;1;0;0;0;0;0;1;1;1;1;0
+Jamal Musiala;Germany;MF;4;270;1;0;0;0;1;0;6;1;5;11;0
+Fernando Muslera;Uruguay;GK;3;225;0;0;0;0;0;0;0;0;0;0;0
+David Møller Wolfe;Norway;DF;5;430;0;1;0;0;0;0;0;0;7;2;0
+Keito Nakamura;Japan;MF;4;307;1;1;0;0;0;0;5;2;3;1;1
+Abdallah Nasib;Jordan;DF;3;260;0;0;0;0;0;0;0;0;1;1;0
+Sherzod Nasrullaev;Uzbekistan;DF,MF;3;180;0;0;0;0;1;0;1;1;3;2;0
+Duckens Nazon;Haiti;FW,MF;1;24;0;0;0;0;1;0;1;1;0;1;0
+Iliman Ndiaye;Senegal;FW;3;114;1;2;0;0;0;0;3;2;2;1;0
+Dan Ndoye;Switzerland;MF,FW;6;406;2;0;0;0;0;0;16;8;5;16;4
+Ali Nemati;IR Iran;DF;3;270;0;0;0;0;1;0;1;0;3;0;1
+Abduvohid Nematov;Uzbekistan;GK;2;180;0;0;0;0;0;0;0;0;0;0;0
+Pedro Neto;Portugal;MF;5;350;0;1;0;0;0;0;1;0;4;4;0
+Manuel Neuer;Germany;GK;4;390;0;0;0;0;0;0;0;0;0;2;0
+João Neves;Portugal;MF;5;390;1;0;0;0;0;0;3;1;1;4;0
+Neymar;Brazil;FW,MF;2;39;1;0;1;1;1;0;3;2;1;1;0
+Nathan Ngoy;Belgium;DF;4;335;0;0;0;0;0;1;1;0;6;1;0
+Moussa Niakhaté;Senegal;DF;4;390;0;1;0;0;0;0;1;0;3;6;0
+Felix Nmecha;Germany;MF;4;270;1;1;0;0;0;0;8;3;3;3;0
+Kristoffer Nordfeldt;Sweden;GK;2;180;0;0;0;0;0;0;0;0;0;0;0
+Antonio Nusa;Norway;FW;6;318;1;0;0;0;1;0;6;2;1;5;2
+Ørjan Nyland;Norway;GK;5;480;0;0;0;0;0;0;0;0;0;0;0
+Aiden O'Neill;Australia;MF;4;360;0;0;0;0;0;0;2;0;2;8;0
+Nico O'Reilly;England;DF;7;461;0;0;0;0;1;0;7;1;6;4;0
+Armando Obispo;Curaçao;DF;3;270;0;0;0;0;0;0;0;0;1;0;1
+Ime Okon;South Africa;DF;4;360;0;0;0;0;0;0;1;0;1;0;0
+Paul Okon-Engstler;Australia;MF;4;197;0;1;0;0;0;0;0;0;3;2;0
+Michael Olise;France;MF;7;556;0;5;0;0;1;0;17;5;4;16;0
+Mathías Olivera;Uruguay;DF;3;270;0;0;0;0;1;0;1;0;3;0;0
+Dani Olmo;Spain;MF;7;417;0;2;0;0;0;0;11;1;5;8;0
+Tani Oluwaseyi;Canada;FW;5;259;0;0;0;0;0;0;8;4;5;5;1
+Ali Olwan;Jordan;MF;3;268;1;0;0;0;0;0;6;3;1;4;1
+Jerome Opoku;Ghana;DF;3;270;0;0;0;0;0;0;0;0;2;4;0
+Joel Ordóñez;Ecuador;DF;3;225;0;0;0;0;0;0;2;0;1;1;0
+Azzedine Ounahi;Morocco;MF;6;435;2;0;0;0;1;0;5;3;3;7;0
+Mohammed Al-Owais;Saudi Arabia;GK;3;270;0;0;0;0;0;0;0;0;0;1;0
+Mikel Oyarzabal;Spain;FW;7;540;5;1;1;1;0;0;22;11;3;4;0
+Willian Pacho;Ecuador;DF;4;360;0;0;0;0;0;0;1;1;3;2;0
+Kendry Páez;Ecuador;MF;1;12;0;0;0;0;1;0;0;0;1;0;0
+Lucas Paquetá;Brazil;MF;4;233;0;1;0;0;0;0;5;1;3;6;0
+Leandro Paredes;Argentina;MF;6;398;0;0;0;0;1;0;4;1;5;2;0
+Thomas Partey;Ghana;MF;3;270;0;0;0;0;0;0;2;0;2;5;0
+Nathan Patterson;Scotland;DF;3;185;0;0;0;0;0;0;0;0;2;0;0
+Aleksandar Pavlovic;Germany;MF;4;272;0;0;0;0;1;0;4;1;13;4;0
+Tim Payne;New Zealand;DF;3;224;0;1;0;0;0;0;1;0;2;2;0
+Marcus Pedersen;Norway;DF;4;236;1;0;0;0;0;0;1;1;3;1;0
+Pedri;Spain;MF;7;440;0;0;0;0;1;0;4;1;3;5;1
+Nicolas Pépé;Côte d'Ivoire;FW;4;234;2;1;0;0;1;0;6;3;1;1;1
+Ricardo Pepi;United States;FW;5;204;0;0;0;0;0;0;5;0;5;3;2
+Kojo Peprah Oppong;Ghana;DF;2;49;0;0;0;0;1;0;0;0;1;0;0
+Ivan Perišić;Croatia;MF,DF;4;360;1;1;0;0;2;0;2;2;4;1;0
+Charles Pickel;Congo DR;DF,MF;2;35;0;0;0;0;1;0;1;0;2;1;0
+Jordan Pickford;England;GK;7;660;0;0;0;0;0;0;0;0;0;4;0
+Pico;Cabo Verde;DF;4;390;0;0;0;0;0;0;2;0;0;3;0
+Frantzdy Pierrot;Haiti;FW;3;143;0;0;0;0;1;0;3;1;5;4;2
+Kevin Pina;Cabo Verde;MF;4;349;1;0;0;0;1;0;5;1;5;3;0
+Wagner Pina;Cabo Verde;DF;1;89;0;0;0;0;1;0;1;0;1;3;0
+Johny Placide;Haiti;GK;3;270;0;0;0;0;1;0;0;0;0;0;0
+Gonzalo Plata;Ecuador;FW;4;360;1;0;0;0;1;0;8;5;5;4;0
+Marin Pongračić;Croatia;DF;3;270;0;0;0;0;0;0;1;0;3;0;0
+Jackson Porozo;Ecuador;DF;1;29;0;0;0;0;1;0;0;0;2;0;0
+Pedro Porro;Spain;DF;5;443;2;0;0;0;0;0;7;3;7;6;0
+Stefan Posch;Austria;DF;4;331;0;0;0;0;2;0;3;0;7;3;0
+Ruben Providence;Haiti;MF;3;220;0;0;0;0;0;0;4;1;3;5;0
+Gustavo Puerta;Colombia;MF;5;469;0;1;0;0;1;0;14;5;9;8;0
+Christian Pulisic;United States;MF;4;223;0;1;0;0;0;0;4;2;1;8;2
+Jarell Quansah;England;DF;2;115;0;0;0;0;1;1;0;0;1;0;0
+Julián Quiñones;Mexico;FW,MF;5;410;4;1;0;0;0;0;14;6;5;7;1
+Ramy Rabia;Egypt;DF;5;372;0;0;0;0;0;0;1;1;3;2;0
+Adrien Rabiot;France;MF;6;495;0;1;0;0;1;0;8;1;11;3;1
+Stjepan Radeljić;Bosnia–Herz;DF;2;180;0;0;0;0;1;0;1;0;1;3;0
+Soufiane Rahimi;Morocco;FW;6;163;2;1;0;0;0;0;6;4;5;6;2
+Gonçalo Ramos;Portugal;FW;2;36;1;0;0;0;0;0;2;1;0;0;0
+Raúl Rangel;Mexico;GK;5;437;0;0;0;0;0;0;0;0;1;0;0
+Nizar Al Rashdan;Jordan;MF;3;255;1;0;0;0;0;0;2;1;5;4;0
+Marcus Rashford;England;MF;5;178;1;0;0;0;0;0;9;3;5;1;1
+Nicolas Raskin;Belgium;MF;6;341;0;2;0;0;0;0;2;1;12;3;0
+Noor Al Rawabdeh;Jordan;MF;3;270;0;1;0;0;0;0;1;0;1;0;0
+Rayan;Brazil;FW,MF;4;288;0;1;0;0;0;0;5;2;5;4;1
+Tim Ream;United States;DF;4;360;0;0;0;0;0;0;0;0;0;2;0
+Tijjani Reijnders;Netherlands;MF;3;199;0;1;0;0;0;0;4;2;0;3;1
+Omar Rekik;Tunisia;DF;2;180;1;0;0;0;0;0;1;1;0;1;1
+Israel Reyes;Mexico;DF;4;202;0;0;0;0;0;0;2;0;1;0;0
+Gio Reyna;United States;MF;5;131;1;0;0;0;0;0;2;1;1;3;0
+Ramin Rezaeian;IR Iran;DF,MF;3;270;2;1;0;0;0;0;4;2;2;3;1
+Chadi Riad;Morocco;DF;4;344;0;1;0;0;0;0;1;0;0;1;0
+Declan Rice;England;MF;6;467;0;1;0;0;2;0;5;2;3;0;1
+Chris Richards;United States;DF;4;360;0;0;0;0;1;0;1;0;8;3;0
+Fabian Rieder;Switzerland;MF,FW;5;302;0;0;0;0;0;0;7;2;3;6;0
+Richard Ríos;Colombia;MF;5;140;0;0;0;0;1;0;5;1;10;4;0
+Ró-Ró;Qatar;DF;3;270;0;0;0;0;0;0;3;1;1;7;0
+Andy Robertson;Scotland;DF;3;225;0;0;0;0;1;0;0;0;3;1;0
+Antonee Robinson;United States;DF,MF;4;348;0;0;0;0;1;0;0;0;4;1;0
+Rodri;Spain;MF;7;626;0;0;0;0;0;0;6;0;9;6;1
+James Rodríguez;Colombia;FW,MF;5;313;0;0;0;0;0;0;6;3;0;5;0
+Ricardo Rodríguez;Switzerland;DF;6;517;0;1;0;0;0;0;1;0;11;2;0
+Morgan Rogers;England;MF;6;249;0;1;0;0;0;0;2;1;5;3;2
+Cristian Romero;Argentina;DF;6;539;1;0;0;0;1;0;3;1;9;3;0
+Luis Romo;Mexico;MF;4;264;1;1;0;0;0;0;3;1;1;3;0
+Cristiano Ronaldo;Portugal;FW;5;440;3;0;1;1;0;0;18;9;2;5;6
+Eloy Room;Curaçao;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Antonio Rüdiger;Germany;DF;4;262;0;0;0;0;0;0;1;0;1;0;0
+Fabián Ruiz Peña;Spain;MF;7;260;1;0;0;0;0;0;8;2;1;3;0
+Julian Ryerson;Norway;DF;4;223;0;0;0;0;0;0;0;0;6;1;0
+Mahmoud Saber;Egypt;MF;2;46;1;0;0;0;1;0;3;1;2;1;0
+Marcel Sabitzer;Austria;MF;4;360;1;0;0;0;1;0;5;2;2;3;1
+Noah Sadiki;Congo DR;MF;4;259;0;0;0;0;2;0;0;0;2;3;0
+Michal Sadílek;Czechia;MF;3;183;1;0;0;0;0;0;7;3;0;3;0
+Alexis Saelemaekers;Belgium;MF;4;83;1;0;0;0;0;0;4;1;0;2;2
+Ismael Saibari;Morocco;FW;5;381;3;0;0;0;0;0;10;3;8;3;3
+Bukayo Saka;England;MF;6;268;0;3;0;0;0;0;8;3;4;7;3
+Mohamed Salah;Egypt;FW,MF;5;425;1;2;0;0;0;0;9;4;5;13;1
+Anass Salah-Eddine;Morocco;DF;4;212;0;0;0;0;0;0;1;0;3;2;0
+Nathan Saliba;Canada;MF;3;182;1;2;0;0;1;0;3;1;5;2;0
+William Saliba;France;DF;6;479;0;0;0;0;0;0;1;0;4;0;0
+Davinson Sánchez;Colombia;DF;5;480;0;0;0;0;1;0;6;2;6;5;1
+Jorge Sánchez;Mexico;DF;4;348;0;1;0;0;1;0;1;1;5;1;1
+Leroy Sané;Germany;MF;4;326;1;0;0;0;0;0;6;2;3;2;1
+Ibrahim Sangaré;Côte d'Ivoire;MF;4;268;0;1;0;0;0;0;1;0;2;4;0
+Kaishū Sano;Japan;MF;3;270;1;1;0;0;1;0;1;1;4;1;0
+Douglas Santos;Brazil;DF;5;441;0;0;0;0;1;0;2;0;3;2;1
+Ismaila Sarr;Senegal;MF,FW;4;364;4;1;0;0;0;0;17;6;1;9;2
+Patrik Schick;Czechia;FW;3;180;0;0;0;0;0;0;2;1;1;3;0
+Andreas Schjelderup;Norway;FW;6;252;1;3;0;0;0;0;3;2;2;3;0
+Alexander Schlager;Austria;GK;4;360;0;0;0;0;0;0;0;0;0;1;0
+Xaver Schlager;Austria;MF;4;238;0;1;0;0;0;0;1;0;6;0;0
+Nico Schlotterbeck;Germany;DF;2;135;1;0;0;0;0;0;2;2;2;1;0
+Romano Schmid;Austria;MF,FW;4;263;1;0;0;0;0;0;2;1;3;4;0
+Abdoulaye Seck;Senegal;DF;1;57;0;1;0;0;1;0;2;0;1;1;0
+Alidu Seidu;Ghana;DF;1;78;0;0;0;0;1;0;0;0;1;0;0
+Nicolas Seiwald;Austria;MF;4;315;0;0;0;0;0;0;3;0;1;1;0
+Nélson Semedo;Portugal;DF,MF;4;127;0;0;0;0;1;0;0;0;2;2;0
+Antoine Semenyo;Ghana;MF,FW;4;360;0;0;0;0;0;0;6;0;6;4;4
+Marvin Senaya;Ghana;DF;4;278;0;0;0;0;0;0;2;0;6;4;0
+Kim Seung-gyu;Korea Republic;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Paik Seung-ho;Korea Republic;MF;3;204;0;0;0;0;1;0;0;0;1;2;0
+Sharara;Jordan;FW;2;2;0;0;0;0;1;0;0;0;1;0;0
+Mostafa Shobeir;Egypt;GK;5;480;0;0;0;0;1;0;0;0;0;5;0
+Eldor Shomurodov;Uzbekistan;FW;3;269;1;0;0;0;0;0;4;2;8;4;1
+Otabek Shukurov;Uzbekistan;MF;3;237;0;0;0;0;0;0;2;0;2;5;0
+Nkosinathi Sibisi;South Africa;DF;1;90;0;0;0;0;1;0;0;0;1;0;0
+Kwasi Sibo;Ghana;MF;4;248;0;0;0;0;0;0;0;0;7;1;0
+Niko Sigur;Canada;MF;3;126;0;0;0;0;1;0;1;0;5;1;0
+Bernardo Silva;Portugal;MF;4;97;0;0;0;0;2;0;1;0;3;0;0
+Unai Simón;Spain;GK;7;630;0;0;0;0;0;0;0;0;0;3;0
+Sarpreet Singh;New Zealand;MF;3;209;0;0;0;0;1;0;4;2;2;2;0
+Sphephelo Sithole;South Africa;MF;3;229;0;0;0;0;0;1;0;0;5;1;0
+Ellyes Skhiri;Tunisia;MF,DF;3;250;0;0;0;0;0;0;0;0;0;1;0
+Harry Souttar;Australia;DF;4;390;0;0;0;0;1;0;1;1;8;1;0
+Djibril Sow;Switzerland;MF;4;253;0;0;0;0;0;0;2;1;5;4;0
+Djed Spence;England;DF;7;314;0;0;0;0;0;0;2;2;1;3;0
+Marko Stamenic;New Zealand;MF;3;269;0;0;0;0;1;0;3;0;4;0;0
+Josip Stanišić;Croatia;DF,MF;4;360;0;1;0;0;0;0;0;0;0;4;0
+John Stones;England;DF;5;330;0;0;0;0;0;0;1;0;1;1;0
+Luis Suárez;Colombia;FW;5;331;0;1;0;0;1;0;9;0;7;8;1
+Petar Sučić;Croatia;MF,FW;4;289;1;1;0;0;1;0;3;2;7;6;1
+Rebin Sulaka;Iraq;DF;2;43;0;0;0;0;0;1;1;0;1;0;0
+Pavel Šulc;Czechia;FW;3;189;0;0;0;0;0;0;2;0;2;1;1
+Crysencio Summerville;Netherlands;FW;4;253;2;2;0;0;1;0;2;2;2;5;1
+Ivan Šunjić;Bosnia–Herz;MF;4;196;0;0;0;0;0;0;1;1;7;0;0
+Finn Surman;New Zealand;DF;3;270;1;0;0;0;0;0;2;1;4;2;0
+Josip Šutalo;Croatia;DF;4;360;0;0;0;0;0;0;1;0;2;1;0
+Junnosuke Suzuki;Japan;DF;2;43;0;0;0;0;1;0;0;0;2;0;0
+Zion Suzuki;Japan;GK;4;360;0;0;0;0;0;0;0;0;0;1;0
+Mattias Svanberg;Sweden;MF;2;16;1;0;0;0;0;0;3;2;0;1;0
+Alexander Sørloth;Norway;FW;5;337;0;0;0;0;0;0;5;0;6;2;2
+Musa Al-Taamari;Jordan;FW;3;215;1;1;0;0;0;0;8;3;2;3;1
+Nicolás Tagliafico;Argentina;DF;6;356;0;0;0;0;0;0;0;0;4;13;2
+Jonathan Tah;Germany;DF;4;372;0;0;0;0;0;0;1;1;5;1;0
+Benjamin Tahirovic;Bosnia–Herz;MF;4;237;0;0;0;0;0;0;1;0;3;2;0
+Zaid Tahseen;Iraq;DF;2;149;0;0;0;0;1;0;2;0;3;2;0
+Montassar Talbi;Tunisia;DF;3;270;0;0;0;0;0;0;1;0;1;1;0
+Hassan Al Tambakti;Saudi Arabia;DF;3;212;0;0;0;0;0;0;0;0;0;1;0
+Ao Tanaka;Japan;MF;3;193;0;0;0;0;0;0;2;0;6;2;0
+Shogo Taniguchi;Japan;DF;3;232;0;0;0;0;1;0;0;0;2;1;0
+Mehdi Taremi;IR Iran;FW;3;259;0;0;0;1;0;0;5;2;3;5;2
+Aurélien Tchouaméni;France;MF;4;360;0;1;0;0;1;0;3;0;4;3;0
+Arthur Theate;Belgium;DF;3;228;0;0;0;0;0;0;5;1;1;0;0
+Youri Tielemans;Belgium;MF;5;474;2;0;1;1;0;0;11;3;7;10;1
+Malik Tillman;United States;MF;5;356;2;1;0;0;1;0;8;4;3;13;0
+Takehiro Tomiyasu;Japan;DF;3;184;0;0;0;0;0;0;1;0;5;2;0
+Ferrán Torres;Spain;FW;7;229;0;1;0;0;1;0;11;2;5;2;2
+Trézéguet;Egypt;MF;4;164;1;1;0;0;0;0;8;3;3;2;0
+Leandro Trossard;Belgium;MF,FW;6;506;2;2;0;0;0;0;17;3;4;8;1
+Auston Trusty;United States;DF;2;101;1;0;0;0;0;0;3;2;2;0;0
+Axel Tuanzebe;Congo DR;DF;4;360;0;0;0;0;0;0;0;0;3;3;0
+Ayase Ueda;Japan;FW;4;321;2;1;0;0;0;0;9;4;6;4;1
+Manuel Ugarte;Uruguay;MF;3;184;0;0;0;0;0;0;3;1;1;0;0
+Deniz Undav;Germany;FW;4;151;3;2;0;0;0;0;6;4;3;0;0
+Dayot Upamecano;France;DF;7;615;0;0;0;0;0;0;3;1;6;4;0
+Enner Valencia;Ecuador;FW;4;287;0;0;0;0;0;0;10;6;4;7;2
+Yan Valery;Tunisia;DF;3;251;0;0;0;0;0;0;0;0;4;0;1
+Federico Valverde;Uruguay;MF;3;236;0;0;0;0;0;0;10;2;1;0;0
+Virgil van Dijk;Netherlands;DF;4;390;1;1;0;0;0;0;2;2;2;2;0
+Hans Vanaken;Belgium;MF;6;319;1;2;0;0;0;0;5;1;0;6;0
+Guillermo Varela;Uruguay;DF;3;270;0;0;0;0;1;0;2;0;1;1;0
+Hélio Varela;Cabo Verde;FW;3;104;1;0;0;0;0;0;3;1;1;2;1
+Camilo Vargas;Colombia;GK;5;480;0;0;0;0;0;0;0;0;0;0;0
+Ruben Vargas;Switzerland;MF;6;284;2;1;0;0;0;0;6;4;6;6;2
+Nikola Vasilj;Bosnia–Herz;GK;4;360;0;0;0;0;0;0;0;0;0;0;0
+Johan Vásquez;Mexico;DF;4;360;0;0;0;0;1;0;1;0;0;2;0
+Renato Veiga;Portugal;DF;5;450;0;0;0;0;2;0;2;0;5;3;0
+Gustavo Velásquez;Paraguay;DF;5;246;0;0;0;0;0;0;0;0;2;0;0
+Micky van de Ven;Netherlands;DF,MF;3;265;0;0;0;0;1;0;3;1;5;1;0
+Bart Verbruggen;Netherlands;GK;4;390;0;0;0;0;0;0;0;0;0;0;0
+Federico Viñas;Uruguay;FW;3;192;0;0;0;0;0;0;6;3;3;3;3
+Pedro Vite;Ecuador;MF;4;360;0;1;0;0;0;0;4;1;2;5;0
+Vitinha;Portugal;MF;5;376;0;0;0;0;0;0;4;0;4;5;0
+Nikola Vlašić;Croatia;MF;3;189;1;0;0;0;0;0;3;1;5;0;2
+Vozinha;Cabo Verde;GK;4;390;0;0;0;0;0;0;0;0;0;3;0
+Aaron Wan-Bissaka;Congo DR;DF;4;354;0;0;0;0;0;0;0;0;1;1;1
+Paul Wanner;Austria;MF;4;234;0;0;0;0;0;0;1;0;4;2;0
+Jacob Widell Zetterström;Sweden;GK;2;180;0;0;0;0;0;0;0;0;0;0;0
+Iñaki Williams;Ghana;MF,FW;2;126;0;0;0;0;1;0;3;0;2;1;1
+Ronwen Williams;South Africa;GK;4;360;0;0;0;0;0;0;0;0;0;0;0
+Florian Wirtz;Germany;MF;4;361;0;3;0;0;0;0;10;1;1;3;1
+Yoane Wissa;Congo DR;FW;4;360;3;0;1;1;0;0;11;3;5;9;1
+Axel Witsel;Belgium;DF,MF;2;33;0;0;0;0;1;0;0;0;2;1;0
+Chris Wood;New Zealand;FW;3;270;0;2;0;0;0;0;5;2;2;1;4
+Granit Xhaka;Switzerland;MF;6;600;1;0;1;1;2;0;9;2;4;12;0
+Lamine Yamal;Spain;MF,FW;7;494;1;0;0;0;0;0;23;10;12;8;7
+Gessime Yassine;Morocco;MF;3;80;1;0;0;0;0;0;2;1;2;3;0
+John Yeboah;Ecuador;MF;4;311;0;0;0;0;0;0;8;3;0;4;0
+Kenan Yıldız;Türkiye;MF;3;218;0;0;0;0;0;0;14;1;2;4;0
+Caleb Yirenkyi;Ghana;MF;4;264;1;0;0;0;2;0;2;1;7;3;0
+Seol Young-woo;Korea Republic;MF;3;250;0;0;0;0;0;0;2;0;1;2;4
+Denis Zakaria;Switzerland;DF;4;357;0;0;0;0;2;0;5;2;4;0;1
+Ramiz Zerrouki;Algeria;MF;3;111;0;0;0;0;1;0;0;0;4;0;0
+Luca Zidane;Algeria;GK;3;270;0;0;0;0;0;0;0;0;0;0;0
+Mostafa Ziko;Egypt;FW,MF;5;370;2;1;0;0;0;0;8;3;6;5;2
+Themba Zwane;South Africa;FW,MF;1;23;0;0;0;0;0;1;0;0;1;0;0
+Martin Ødegaard;Norway;MF;5;470;0;4;0;0;0;0;9;3;3;4;0
+Leo Østigård;Norway;DF;5;146;1;0;0;0;0;0;3;1;2;2;0`;
+const FB2STD = {"Bosnia–Herz":"Bosnia-Herzegovina","Cabo Verde":"Cape Verde Islands","Côte d'Ivoire":"Ivory Coast","IR Iran":"Iran","Korea Republic":"South Korea","Türkiye":"Turkey"};
+const std = t => FB2STD[t] || t;
+const _fb = FBCSV.trim().split("\n");
+const _ip = _fb.indexOf("#PLAYERS");
+const FBSQ = _fb.slice(1, _ip).map(l => {
+  const f = l.split(";");
+  return {team: std(f[0]), mp:+f[1], gls:+f[2], ast:+f[3], pk:+f[4], pkatt:+f[5], y:+f[6], r:+f[7], sh:+f[8], sot:+f[9], fls:+f[10], fld:+f[11], off:+f[12]};
+});
+const FBPL = _fb.slice(_ip + 1).map(l => {
+  const f = l.split(";");
+  return {name:f[0], team: std(f[1]), pos:f[2], mp:+f[3], min:+f[4], gls:+f[5], ast:+f[6], pk:+f[7], pkatt:+f[8], y:+f[9], r:+f[10], sh:+f[11], sot:+f[12], fls:+f[13], fld:+f[14], off:+f[15]};
+});
+
+const TEAM_METRICS = [
+  ["gls","Goals"],["ast","Assists"],["sh","Total shots"],["sot","Shots on target"],
+  ["acc","Shot accuracy %"],["conv","Conversion % (goals per shot)"],
+  ["y","Yellow cards"],["r","Red cards"],["cards","Total cards"],
+  ["fls","Fouls committed"],["fld","Fouls won"],["off","Offsides"],["pk","Penalty goals (in play)"]
+];
+function teamVal(s, m){
+  if (m === "acc") return s.sh ? s.sot / s.sh * 100 : 0;
+  if (m === "conv") return s.sh ? s.gls / s.sh * 100 : 0;
+  if (m === "cards") return s.y + s.r;
+  return s[m];
+}
+const PCT = {acc:1, conv:1};
+let sConf = "ALL", perMatch = false, selCountry = "ALL";
+
+function renderSConfPills(){
+  document.getElementById("sConfPills").innerHTML =
+    ["ALL"].concat(CONFS).map(c => '<button class="pill' + (sConf === c ? " active" : "") + '" onclick="setSConf(\'' + c + '\')">' + (c === "ALL" ? "🌐 All" : (CONF_EMOJI[c] + " " + c)) + "</button>").join(" ");
+}
+function setSConf(c){ sConf = c; renderSConfPills(); renderTeamStats(); renderPlayerRank(); }
+function togglePerMatch(){
+  perMatch = !perMatch;
+  document.getElementById("sPerMatch").classList.toggle("active", perMatch);
+  renderTeamStats();
+}
+function pickCountry(t){
+  document.getElementById("pCountry").value = t;
+  renderPlayerRank();
+  document.getElementById("playerRankChart").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function renderTeamStats(){
+  const m = document.getElementById("sTeamMetric").value || "gls";
+  const isPct = PCT[m];
+  let list = FBSQ.filter(s => sConf === "ALL" || CONF[s.team] === sConf)
+    .map(s => ({team: s.team, v: teamVal(s, m) / ((perMatch && !isPct) ? s.mp : 1), mp: s.mp}));
+  list.sort((a,b) => b.v - a.v);
+  const max = Math.max(...list.map(x => x.v)) || 1;
+  const CAP = 12;
+  const shown = EXP.tstats ? list : list.slice(0, CAP);
+  document.getElementById("teamStatChart").innerHTML = shown.map(x =>
+    '<div class="grow" style="cursor:pointer" onclick="pickCountry(\'' + x.team.replace(/'/g, "\\'") + '\')">' +
+    '<div class="gl">' + fl(x.team) + ' ' + x.team + '</div>' +
+    '<div class="gbar" style="width:' + (x.v / max * 100) + '%"></div>' +
+    '<div class="gv"><b>' + (isPct ? x.v.toFixed(1) + '%' : (perMatch ? x.v.toFixed(2) : x.v)) + '</b> <span style="font-size:11px">(' + x.mp + ' games)</span></div></div>'
+  ).join("") +
+  (list.length > CAP ? '<div class="morewrap"><button class="more" onclick="toggleExp(\'tstats\', renderTeamStats)">' + (EXP.tstats ? '▴ Collapse' : '▾ Show all ' + list.length + ' teams') + '</button></div>' : '') +
+  '<div style="font-size:12px;color:#63788d;margin-top:8px">' + (perMatch && !isPct ? "Per-match values. " : "") + 'Click a country to load its players below.</div>';
+}
+
+const PLAYER_METRICS = [
+  ["gls","Goals"],["ast","Assists"],["ga","Goals + assists"],["g90","Goals per 90 min"],
+  ["min","Minutes played"],["mp","Matches"],["sh","Shots"],["sot","Shots on target"],
+  ["s90","Shots per 90 min"],["acc","Shot accuracy %"],["conv","Conversion % (goals per shot)"],
+  ["y","Yellow cards"],["r","Red cards"],["cards","Total cards"],
+  ["fls","Fouls committed"],["f90","Fouls per 90 min"],["fld","Fouls won"],["off","Offsides"],
+  ["pk","Penalty goals"],["pkatt","Penalty attempts"]
+];
+function pVal(p, m){
+  if (m === "ga") return p.gls + p.ast;
+  if (m === "g90") return p.min ? p.gls / p.min * 90 : 0;
+  if (m === "s90") return p.min ? p.sh / p.min * 90 : 0;
+  if (m === "f90") return p.min ? p.fls / p.min * 90 : 0;
+  if (m === "acc") return p.sh ? p.sot / p.sh * 100 : 0;
+  if (m === "conv") return p.sh ? p.gls / p.sh * 100 : 0;
+  if (m === "cards") return p.y + p.r;
+  return p[m];
+}
+const PDEC = {g90:2, s90:2, f90:2, acc:1, conv:1};
+function renderPlayerRank(){
+  const m = document.getElementById("pMetric").value || "gls";
+  const country = document.getElementById("pCountry").value || "ALL";
+  const pos = document.getElementById("pPos").value || "ALL";
+  const minMin = +document.getElementById("pMinMin").value || 0;
+  let list = FBPL.filter(p =>
+    (country === "ALL" || p.team === country) &&
+    (sConf === "ALL" || CONF[p.team] === sConf) &&
+    (pos === "ALL" || p.pos.includes(pos)) &&
+    p.min >= minMin);
+  list = list.map(p => ({p, v: pVal(p, m)})).sort((a,b) => b.v - a.v).slice(0, EXP.prank ? 20 : 8);
+  const max = Math.max(...list.map(x => x.v)) || 1;
+  const dec = PDEC[m];
+  document.getElementById("playerRankChart").innerHTML = (list.length ? list.map((x, i) =>
+    '<div class="grow"><div class="gl" style="font-size:12.5px">' + (i+1) + '. ' + fl(x.p.team) + ' ' + x.p.name + '</div>' +
+    '<div class="gbar" style="width:' + (x.v / max * 100) + '%"></div>' +
+    '<div class="gv"><b>' + (dec ? x.v.toFixed(dec) : x.v) + (PCT[m] || m === "acc" || m === "conv" ? "%" : "") + '</b> <span style="font-size:11px">(' + x.p.min + "')</span></div></div>"
+  ).join("") : '<p style="padding:12px;color:#63788d">No players match these filters.</p>') +
+  (list.length >= 8 ? '<div class="morewrap"><button class="more" onclick="toggleExp(\'prank\', renderPlayerRank)">' + (EXP.prank ? '▴ Top 8 only' : '▾ Show top 20') + '</button></div>' : '');
+}
+
+function fillPlayerUI(){
+  const tm = document.getElementById("sTeamMetric");
+  tm.innerHTML = TEAM_METRICS.map(x => '<option value="' + x[0] + '">' + x[1] + '</option>').join("");
+  const pm = document.getElementById("pMetric");
+  pm.innerHTML = PLAYER_METRICS.map(x => '<option value="' + x[0] + '">' + x[1] + '</option>').join("");
+  const teams = FBSQ.map(s => s.team).sort();
+  document.getElementById("pCountry").innerHTML = '<option value="ALL">🌐 All countries</option>' +
+    teams.map(t => '<option value="' + t + '">' + fl(t) + ' ' + t + '</option>').join("");
+  const opts = FBPL.slice().sort((a,b) => a.name.localeCompare(b.name))
+    .map((p, i) => '<option value="' + i + '">' + fl(p.team) + ' ' + p.name + ' (' + p.team + ')</option>').join("");
+  window.__plSorted = FBPL.slice().sort((a,b) => a.name.localeCompare(b.name));
+  const A = document.getElementById("plA"), B = document.getElementById("plB");
+  A.innerHTML = opts; B.innerHTML = opts;
+  A.value = String(window.__plSorted.findIndex(p => p.name === "Lionel Messi"));
+  B.value = String(window.__plSorted.findIndex(p => p.name === "Kylian Mbappé"));
+}
+function pcmpRow(label, va, vb, dec, suf){
+  const max = Math.max(va, vb) || 1;
+  const f = x => (dec ? x.toFixed(dec) : x) + (suf || "");
+  return '<div class="cmp-row">' +
+    '<div class="num l">' + f(va) + '</div>' +
+    '<div class="barwrap l"><div class="barfill' + (va >= vb ? ' lead' : '') + '" style="width:' + (va / max * 100) + '%"></div></div>' +
+    '<div class="lbl">' + label + '</div>' +
+    '<div class="barwrap"><div class="barfill' + (vb > va ? ' lead' : '') + '" style="width:' + (vb / max * 100) + '%"></div></div>' +
+    '<div class="num">' + f(vb) + '</div></div>';
+}
+function renderPlayerCompare(){
+  const a = window.__plSorted[+document.getElementById("plA").value];
+  const b = window.__plSorted[+document.getElementById("plB").value];
+  if (!a || !b) return;
+  if (!window.__pmx){
+    const base = FBPL.filter(p => p.min >= 300);
+    const mx = f => Math.max(...base.map(f)) || 1;
+    window.__pmx = {g: mx(p => p.gls / p.min * 90), a: mx(p => p.ast / p.min * 90), s: mx(p => p.sh / p.min * 90),
+      acc: mx(p => p.sh ? p.sot / p.sh : 0), fld: mx(p => p.fld / p.min * 90), c: mx(p => (p.y + p.r) / p.min * 90)};
+  }
+  const nm = window.__pmx;
+  const vec = p => p.min ? [
+    (p.gls / p.min * 90) / nm.g, (p.ast / p.min * 90) / nm.a, (p.sh / p.min * 90) / nm.s,
+    (p.sh ? p.sot / p.sh : 0) / nm.acc, (p.fld / p.min * 90) / nm.fld, 1 - Math.min(((p.y + p.r) / p.min * 90) / nm.c, 1)
+  ] : [0,0,0,0,0,0];
+  const radar = radarSVG(["Goals/90","Assists/90","Shots/90","Accuracy","Fouled/90","Discipline"], vec(a), vec(b), a.name, b.name, "#1D5B99", "#E4572E");
+  document.getElementById("plCmpBody").innerHTML =
+    '<div class="cmp-head"><span>' + crest(a.team) + ' ' + fl(a.team) + ' ' + a.name + ' <span style="font-size:12px;color:#63788d">' + a.pos + '</span></span>' +
+    '<span><span style="font-size:12px;color:#63788d">' + b.pos + '</span> ' + b.name + ' ' + fl(b.team) + ' ' + crest(b.team) + '</span></div>' + radar +
+    pcmpRow("Minutes", a.min, b.min) +
+    pcmpRow("Matches", a.mp, b.mp) +
+    pcmpRow("Goals", a.gls, b.gls) +
+    pcmpRow("Assists", a.ast, b.ast) +
+    pcmpRow("Goals / 90", pVal(a,"g90"), pVal(b,"g90"), 2) +
+    pcmpRow("Shots", a.sh, b.sh) +
+    pcmpRow("On target", a.sot, b.sot) +
+    pcmpRow("Accuracy", pVal(a,"acc"), pVal(b,"acc"), 1, "%") +
+    pcmpRow("Conversion", pVal(a,"conv"), pVal(b,"conv"), 1, "%") +
+    pcmpRow("Pens (made)", a.pk, b.pk) +
+    pcmpRow("Pen attempts", a.pkatt, b.pkatt) +
+    pcmpRow("Yellow cards", a.y, b.y) +
+    pcmpRow("Red cards", a.r, b.r) +
+    pcmpRow("Fouls committed", a.fls, b.fls) +
+    pcmpRow("Fouls won", a.fld, b.fld) +
+    pcmpRow("Offsides", a.off, b.off);
+}
+window.__FBSQ = FBSQ;
+renderSConfPills(); fillPlayerUI(); renderTeamStats(); renderPlayerRank(); renderPlayerCompare();
+renderCompare(); /* re-render team H2H now that FBref data is loaded, to add the radar */
+</script>
+<script>
+/* ==================== SHOWCASE CHARTS ==================== */
+const CONF_COLOR = {UEFA:"#4A8CC7", CONMEBOL:"#1E9E5A", CONCACAF:"#E4572E", CAF:"#F5C518", AFC:"#9B5DE5", OFC:"#00B4D8"};
+function P(r, a){ const rad = (a - 90) * Math.PI / 180; return [r * Math.cos(rad), r * Math.sin(rad)]; }
+
+/* ---------- 1. THE ORBIT (radial knockout bracket) ---------- */
+function renderOrbit(){
+  const stages = ["LAST_32","LAST_16","QUARTER_FINALS","SEMI_FINALS","FINAL"];
+  const byStage = {}; stages.forEach(s => byStage[s] = M.filter(m => m[2] === s));
+  const RAD = {LEAF:308, LAST_32:258, LAST_16:200, QUARTER_FINALS:142, SEMI_FINALS:84, FINAL:0};
+  const finalM = byStage.FINAL[0];
+  function build(m, si){
+    const node = {m, r: RAD[stages[si]], kids: []};
+    if (si === 0){
+      node.kids = [{team: m[4], r: RAD.LEAF}, {team: m[5], r: RAD.LEAF}];
+    } else {
+      [m[4], m[5]].forEach(t => {
+        const fm = byStage[stages[si - 1]].find(x => x[4] === t || x[5] === t);
+        if (fm) node.kids.push(build(fm, si - 1));
+      });
+    }
+    return node;
+  }
+  const root = build(finalM, 4);
+  let li = 0;
+  (function setA(n){
+    if (n.team){ n.a = (li + 0.5) * (360 / 32); li++; return; }
+    n.kids.forEach(setA);
+    n.a = n.kids.reduce((s,k) => s + k.a, 0) / n.kids.length;
+  })(root);
+  const finalists = [finalM[4], finalM[5]];
+  let links = "", leaves = "", ringLbl = "";
+  let delayBase = {308:0, 258:0.15, 200:0.45, 142:0.75, 84:1.05, 0:1.35};
+  (function draw(n){
+    n.kids.forEach(k => {
+      const team = k.team || mWinner(k.m);
+      const gold = finalists.includes(team);
+      const [x1,y1] = P(k.r, k.a), [x2,y2] = P(n.r, n.a);
+      const rm = (k.r + n.r) / 2;
+      const [c1x,c1y] = P(rm, k.a), [c2x,c2y] = P(rm, n.a);
+      const stroke = gold ? "#F5C518" : (team ? "rgba(117,170,219,.55)" : "rgba(220,232,244,.18)");
+      const w = gold ? 3 : 1.6;
+      links += '<path class="bk-link" pathLength="1" d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+        ' C' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ' ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
+        '" stroke="' + stroke + '" stroke-width="' + w + '" data-team="' + esc(team || "") + '" data-s0="' + stroke + '" data-w0="' + w +
+        '" style="animation-delay:' + (delayBase[k.r] || 0) + 's"' +
+        (gold ? ' filter="url(#glow)"' : '') + '><title>' + esc(mLabel(n.m)) + '</title></path>';
+      if (k.team){
+        const flip = k.a > 90 && k.a < 270;
+        const [tx,ty] = P(318, k.a);
+        const won = mWinner(n.m) === k.team;
+        leaves += '<text class="bk-leaf" x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) +
+          '" transform="rotate(' + (flip ? k.a + 90 : k.a - 90).toFixed(1) + ' ' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ')"' +
+          ' text-anchor="' + (flip ? "end" : "start") + '" fill="' + (finalists.includes(k.team) ? "#F5C518" : won ? "#BFDBF2" : "rgba(220,232,244,.45)") + '"' +
+          ' data-team="' + esc(k.team) + '" onmouseenter="bkHover(this.dataset.team)" onmouseleave="bkOut()">' +
+          fl(k.team) + ' ' + esc(shortN(k.team)) + '</text>';
+      } else draw(k);
+    });
+  })(root);
+  ["LAST_32","LAST_16","QUARTER_FINALS","SEMI_FINALS"].forEach(s => {
+    ringLbl += '<circle cx="0" cy="0" r="' + RAD[s] + '" fill="none" stroke="rgba(220,232,244,.07)" stroke-width="1"/>';
+  });
+  const ringNames = [["R32",258],["R16",200],["QF",142],["SF",84]];
+  ringNames.forEach(x => { ringLbl += '<text x="4" y="' + (-x[1] + 12) + '" font-size="9" fill="rgba(220,232,244,.35)" font-weight="700">' + x[0] + '</text>'; });
+  const done = finalM[1] === "FINISHED";
+  const champ = done ? mWinner(finalM) : null;
+  const center = done
+    ? '<text x="0" y="-14" text-anchor="middle" font-size="30">🏆</text>' +
+      '<text x="0" y="14" text-anchor="middle" font-size="15" font-weight="800" fill="#F5C518">' + fl(champ) + ' ' + esc(shortN(champ)) + '</text>' +
+      '<text x="0" y="32" text-anchor="middle" font-size="10" fill="rgba(220,232,244,.6)">CHAMPIONS</text>'
+    : '<text x="0" y="-16" text-anchor="middle" font-size="30">🏆</text>' +
+      '<text x="0" y="8" text-anchor="middle" font-size="12.5" font-weight="800" fill="#F5C518">' + fl(finalM[4]) + ' vs ' + fl(finalM[5]) + '</text>' +
+      '<text x="0" y="26" text-anchor="middle" font-size="10" fill="rgba(220,232,244,.65)">FINAL · SUN JUL 19</text>';
+  document.getElementById("orbitWrap").innerHTML =
+    '<svg viewBox="-390 -390 780 780" role="img" aria-label="Radial knockout bracket">' +
+    '<defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>' +
+    ringLbl + links + leaves + center + '</svg>' +
+    '<div style="font-size:11.5px;opacity:.6;margin-top:6px">Bronze match (Jul 18): ' + fl("France") + ' France vs ' + fl("England") + ' England · gold threads = the finalists’ runs</div>';
+}
+function bkHover(t){
+  document.querySelectorAll('#orbitWrap path.bk-link').forEach(p => {
+    if (p.dataset.team === t){ p.setAttribute("stroke", "#FFFFFF"); p.setAttribute("stroke-width", 4); }
+    else { p.setAttribute("stroke", "rgba(220,232,244,.08)"); p.setAttribute("stroke-width", p.dataset.w0); }
+  });
+}
+function bkOut(){
+  document.querySelectorAll('#orbitWrap path.bk-link').forEach(p => {
+    p.setAttribute("stroke", p.dataset.s0); p.setAttribute("stroke-width", p.dataset.w0);
+  });
+}
+
+/* ---------- 2. THE CLINICAL GAP (dumbbell: on-target vs goals) ---------- */
+let scPos = "ALL";
+function setScPos(p){ scPos = p; renderScPills(); renderScatter(); }
+function renderScPills(){
+  document.getElementById("scPills").innerHTML = [["ALL","All outfielders"],["FW","Forwards"],["MF","Midfielders"],["DF","Defenders"]]
+    .map(x => '<button class="pill' + (scPos === x[0] ? " active" : "") + '" onclick="setScPos(\'' + x[0] + '\')">' + x[1] + '</button>').join(" ");
+}
+function renderScatter(){
+  const N = 16;
+  const list = FBPL.filter(p => !p.pos.includes("GK") && p.sot >= 3 && (scPos === "ALL" || p.pos.includes(scPos)))
+    .sort((a,b) => b.sot - a.sot).slice(0, N);
+  if (!list.length){ document.getElementById("scatterWrap").innerHTML = '<p style="padding:14px;color:#63788d">No players match.</p>'; return; }
+  const rowH = 30, mT = 30, mL = 168, mR = 92, W = 780, H = mT + list.length * rowH + 14;
+  const maxV = Math.max(...list.map(p => p.sot)) || 1;
+  const X = v => mL + v / maxV * (W - mL - mR);
+  let grid = "";
+  for (let v = 0; v <= maxV; v += Math.ceil(maxV / 8)){
+    grid += '<line x1="' + X(v).toFixed(1) + '" y1="' + mT + '" x2="' + X(v).toFixed(1) + '" y2="' + (H - 14) + '" stroke="#EDF3FA"/>' +
+      '<text x="' + X(v).toFixed(1) + '" y="' + (mT - 10) + '" text-anchor="middle" font-size="9.5" fill="#8AA0B5">' + v + '</text>';
+  }
+  let rows = "";
+  list.forEach((p, i) => {
+    const y = mT + i * rowH + rowH / 2;
+    const xg = X(p.gls), xs = X(p.sot);
+    const convRaw = p.sot ? p.gls / p.sot : 0;
+    const tip = "<b>" + esc(p.name) + "</b> " + fl(p.team) + "<br>" + p.sot + " shots on target → " + p.gls + " goals<br><b>" + Math.round(convRaw * 100) + "%</b> of on-target shots scored";
+    rows += '<g data-tip="' + esc(tip) + '" onmousemove="showTip(event, this.dataset.tip)" onmouseleave="hideTip()" style="cursor:default">' +
+      '<text x="' + (mL - 12) + '" y="' + (y + 4) + '" text-anchor="end" font-size="12" font-weight="600" fill="#12263A">' + fl(p.team) + ' ' + esc(p.name.length > 17 ? p.name.split(" ").slice(-1)[0] : p.name) + '</text>' +
+      '<line x1="' + xg.toFixed(1) + '" y1="' + y + '" x2="' + xs.toFixed(1) + '" y2="' + y + '" stroke="#C3D6E8" stroke-width="4" stroke-linecap="round"/>' +
+      '<circle cx="' + xs.toFixed(1) + '" cy="' + y + '" r="7" fill="#1D5B99"/>' +
+      '<circle cx="' + xg.toFixed(1) + '" cy="' + y + '" r="7" fill="#F5C518" stroke="#E3A80B" stroke-width="1.5"/>' +
+      '<text x="' + (W - mR + 12) + '" y="' + (y + 4) + '" font-size="11.5" font-weight="700" fill="#41586e">' + p.gls + '/' + p.sot + ' · ' + Math.round(convRaw * 100) + '%</text>' +
+      '</g>';
+  });
+  document.getElementById("scatterWrap").innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '">' + grid + rows +
+    '<text x="' + ((mL + W - mR) / 2) + '" y="' + (H - 1) + '" text-anchor="middle" font-size="10.5" fill="#8AA0B5">shots →</text></svg>' +
+    '<div style="font-size:12.5px;margin-top:6px"><span style="color:#1D5B99;font-weight:700">● on target</span> &nbsp; <span style="color:#E3A80B;font-weight:700">● goals</span> &nbsp;·&nbsp; right label = goals/on-target · finishing rate</div>';
+}
+
+/* ---------- 3. THE ROSE (nightingale, metric-driven) ---------- */
+function renderRose(){
+  const sel = document.getElementById("roseMetric");
+  if (!sel.options || !sel.options.length){
+    sel.innerHTML = TEAM_METRICS.map(x => '<option value="' + x[0] + '">' + x[1] + '</option>').join("");
+  }
+  const m = sel.value || "gls";
+  const isPct = PCT[m];
+  let list = [];
+  CONFS.forEach(c => {
+    FBSQ.filter(s => CONF[s.team] === c).map(s => ({s, v: teamVal(s, m)}))
+      .sort((a,b) => b.v - a.v).forEach(x => list.push({team: x.s.team, v: x.v, c, mp: x.s.mp}));
+  });
+  const max = Math.max(...list.map(x => x.v)) || 1;
+  const R0 = 46, RMAX = 236, slice = 360 / list.length, gap = 1.1;
+  let petals = "", flags = "", rings = "";
+  [0.25, 0.5, 0.75, 1].forEach(f => {
+    rings += '<circle cx="0" cy="0" r="' + (R0 + f * RMAX) + '" fill="none" stroke="rgba(220,232,244,.09)"/>' +
+      '<text x="3" y="' + (-(R0 + f * RMAX) - 3) + '" font-size="9" fill="rgba(220,232,244,.4)">' + (isPct ? (max * f).toFixed(0) + '%' : (max * f).toFixed(max < 20 ? 1 : 0)) + '</text>';
+  });
+  list.forEach((x, i) => {
+    const a1 = i * slice + gap / 2, a2 = (i + 1) * slice - gap / 2;
+    const r = R0 + Math.max(x.v / max, 0.015) * RMAX;
+    const [p1x,p1y] = P(R0, a1), [p2x,p2y] = P(r, a1), [p3x,p3y] = P(r, a2), [p4x,p4y] = P(R0, a2);
+    const tip = fl(x.team) + " <b>" + esc(x.team) + "</b> · " + x.c + "<br>" + TEAM_METRICS.find(t => t[0] === m)[1] + ": <b>" + (isPct ? x.v.toFixed(1) + "%" : x.v) + "</b> in " + x.mp + " games";
+    petals += '<path class="rose-petal" style="--ox:0px;--oy:0px;animation-delay:' + (i * 18) + 'ms" d="M' + p1x.toFixed(1) + ' ' + p1y.toFixed(1) +
+      ' L' + p2x.toFixed(1) + ' ' + p2y.toFixed(1) +
+      ' A' + r.toFixed(1) + ' ' + r.toFixed(1) + ' 0 0 1 ' + p3x.toFixed(1) + ' ' + p3y.toFixed(1) +
+      ' L' + p4x.toFixed(1) + ' ' + p4y.toFixed(1) +
+      ' A' + R0 + ' ' + R0 + ' 0 0 0 ' + p1x.toFixed(1) + ' ' + p1y.toFixed(1) + ' Z"' +
+      ' fill="' + CONF_COLOR[x.c] + '" fill-opacity="0.82" data-tip="' + esc(tip) + '" onmousemove="showTip(event, this.dataset.tip)" onmouseleave="hideTip()"/>';
+    const am = (a1 + a2) / 2, [fx,fy] = P(Math.max(r + 15, 66), am);
+    flags += '<text x="' + fx.toFixed(1) + '" y="' + (fy + 4).toFixed(1) + '" text-anchor="middle" font-size="12">' + fl(x.team) + '</text>';
+  });
+  const lbl = TEAM_METRICS.find(t => t[0] === m)[1];
+  document.getElementById("roseWrap").innerHTML =
+    '<svg viewBox="-300 -300 600 600">' + rings + petals + flags +
+    '<circle cx="0" cy="0" r="' + (R0 - 6) + '" fill="#0E2A47"/>' +
+    '<text x="0" y="-2" text-anchor="middle" font-size="11" font-weight="800" fill="#F5C518">' + esc(lbl.toUpperCase().slice(0, 18)) + '</text>' +
+    '<text x="0" y="14" text-anchor="middle" font-size="9.5" fill="rgba(220,232,244,.6)">48 NATIONS</text></svg>';
+  document.getElementById("roseLegend").innerHTML = CONFS.map(c =>
+    '<span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + CONF_COLOR[c] + ';margin-right:5px"></span>' + c + '</span>').join("");
+}
+renderOrbit(); renderScPills(); renderScatter(); renderRose();
+</script>
+</body>
+</html>
